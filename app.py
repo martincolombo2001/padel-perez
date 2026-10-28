@@ -293,5 +293,29 @@ def eliminar_sponsor(id_sponsor):
     conexion.close()
     return redirect(url_for('panel_admin'))
 
+# ==========================================
+# CREACIÓN AUTOMÁTICA DE TABLAS (Nube / Local)
+# ==========================================
+def inicializar_base_datos():
+    try:
+        conexion = obtener_conexion()
+        cursor = conexion.cursor()
+        
+        cursor.execute('''CREATE TABLE IF NOT EXISTS torneos (id SERIAL PRIMARY KEY, nombre VARCHAR(100), categorias VARCHAR(100), fecha VARCHAR(100), precio VARCHAR(100), premios VARCHAR(100))''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS rankings (id SERIAL PRIMARY KEY, jugador VARCHAR(100), categoria VARCHAR(50), puntos INTEGER)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS tienda (id SERIAL PRIMARY KEY, categoria VARCHAR(50), genero VARCHAR(50), producto VARCHAR(100), talle VARCHAR(50), precio VARCHAR(50), imagen VARCHAR(255))''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS equipos_liga (id SERIAL PRIMARY KEY, rama VARCHAR(50), categoria VARCHAR(50), j1_nombre VARCHAR(50), j1_apellido VARCHAR(50), j2_nombre VARCHAR(50), j2_apellido VARCHAR(50), puntos INTEGER DEFAULT 0, pj INTEGER DEFAULT 0)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS partidos_liga (id SERIAL PRIMARY KEY, rama VARCHAR(50), categoria VARCHAR(50), fase VARCHAR(50), equipo1_id INTEGER REFERENCES equipos_liga(id) ON DELETE CASCADE, equipo2_id INTEGER REFERENCES equipos_liga(id) ON DELETE CASCADE, resultado VARCHAR(100) DEFAULT 'Pendiente')''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS sponsors (id SERIAL PRIMARY KEY, nombre VARCHAR(100), imagen VARCHAR(255))''')
+        
+        conexion.commit()
+        conexion.close()
+        print("¡Tablas verificadas e inicializadas correctamente!")
+    except Exception as e:
+        print("Aviso de conexión a base de datos:", e)
+
+# Ejecutamos la función al arrancar la app
+inicializar_base_datos()
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
