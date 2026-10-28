@@ -12,25 +12,21 @@
         h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 30px; font-size: 28px; }
         .contenedor { max-width: 1000px; margin: 0 auto; }
 
-        /* Botonera de Secciones */
         .grilla-botones { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; justify-content: center; }
         .tarjeta-opcion { flex: 1; min-width: 250px; max-width: 400px; background-color: #000932; color: white; text-align: center; padding: 25px 15px; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s; border: none; font-family: inherit;}
         .tarjeta-opcion:hover { transform: translateY(-5px); background-color: #001f5c; }
         .tarjeta-opcion h2 { margin: 0 0 10px 0; color: #93b625; font-size: 22px; text-transform: uppercase; }
         .tarjeta-opcion.activa { border: 3px solid #93b625; background-color: #001f5c; }
 
-        /* NUEVO: Filtros de Indumentaria */
         .filtros-secundarios { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-filtro { padding: 8px 16px; border: 1px solid #000932; background-color: transparent; color: #000932; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.2s; font-size: 14px;}
         .btn-filtro.activo { background-color: #000932; color: white; }
         .btn-filtro:hover { background-color: #000932; color: white; }
 
-        /* Grilla de Productos */
         .seccion-tienda { display: none; }
         .seccion-tienda.activa { display: block; }
         .grilla-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         
-        /* Tarjetas de Producto */
         .producto-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; text-align: center; }
         .producto-img-container { width: 100%; height: 250px; background-color: #fff; display: flex; justify-content: center; align-items: center; overflow: hidden; border-bottom: 1px solid #eee; }
         .producto-img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -69,13 +65,13 @@
                     {% if prod[1] == 'Equipamiento de Padel' %}
                     <div class="producto-card">
                         <div class="producto-img-container">
-                            <img src="{{ url_for('static', filename='uploads/' + prod[6]) }}" alt="{{ prod[3] }}">
+                            <img src="{{ prod[6] }}" alt="{{ prod[3] }}">
                         </div>
                         <div class="producto-info">
                             <span class="producto-categoria">Equipamiento</span>
                             <h3 class="producto-nombre">{{ prod[3] }}</h3>
                             <div class="producto-precio">{{ prod[5] }}</div>
-                            <a href="https://wa.me/5493410000000?text=Hola,%20me%20interesa%20el%20producto:%20{{ prod[3] }}" class="btn-comprar" target="_blank">Consultar Disponibilidad</a>
+                            <a href="https://wa.me/5493412852271?text=Hola,%20me%20interesa%20el%20producto:%20{{ prod[3] }}" class="btn-comprar" target="_blank">Consultar Disponibilidad</a>
                         </div>
                     </div>
                     {% set ns_eq.hay = true %}
@@ -89,8 +85,6 @@
 
         <!-- SECCIÓN: INDUMENTARIA -->
         <div id="indumentaria" class="seccion-tienda">
-            
-            <!-- NUEVO: Sub-menú de Filtros -->
             <div class="filtros-secundarios">
                 <button class="btn-filtro activo" onclick="filtrarIndumentaria('Todos', this)">Todos</button>
                 <button class="btn-filtro" onclick="filtrarIndumentaria('Caballeros', this)">Caballeros</button>
@@ -102,17 +96,16 @@
                 {% set ns_ind = namespace(hay=false) %}
                 {% for prod in tienda %}
                     {% if prod[1] == 'Indumentaria' %}
-                    <!-- Inyectamos el atributo data-genero para que JS lo identifique -->
                     <div class="producto-card item-indumentaria" data-genero="{{ prod[2] }}">
                         <div class="producto-img-container">
-                            <img src="{{ url_for('static', filename='uploads/' + prod[6]) }}" alt="{{ prod[3] }}">
+                            <img src="{{ prod[6] }}" alt="{{ prod[3] }}">
                         </div>
                         <div class="producto-info">
                             <span class="producto-categoria">{% if prod[2] == 'No aplica' %}Unisex{% else %}{{ prod[2] }}{% endif %}</span>
                             <h3 class="producto-nombre">{{ prod[3] }}</h3>
                             <div class="producto-talle">Talle: <strong>{{ prod[4] }}</strong></div>
                             <div class="producto-precio">{{ prod[5] }}</div>
-                            <a href="https://wa.me/5493410000000?text=Hola,%20me%20interesa%20la%20prenda:%20{{ prod[3] }}%20(Talle:%20{{ prod[4] }})" class="btn-comprar" target="_blank">Consultar Disponibilidad</a>
+                            <a href="https://wa.me/5493412852271?text=Hola,%20me%20interesa%20la%20prenda:%20{{ prod[3] }}%20(Talle:%20{{ prod[4] }})" class="btn-comprar" target="_blank">Consultar Disponibilidad</a>
                         </div>
                     </div>
                     {% set ns_ind.hay = true %}
@@ -127,7 +120,6 @@
     </div>
 
     <script>
-        // Función para cambiar entre Equipamiento e Indumentaria
         function mostrarSeccion(seccionId, botonClickeado) {
             document.querySelectorAll('.seccion-tienda').forEach(seccion => {
                 seccion.classList.remove('activa');
@@ -140,9 +132,7 @@
             botonClickeado.classList.add('activa');
         }
 
-        // NUEVO: Función para filtrar los productos de Indumentaria
         function filtrarIndumentaria(genero, botonClickeado) {
-            // Pintar el botón activo
             document.querySelectorAll('.btn-filtro').forEach(btn => {
                 btn.classList.remove('activa');
                 btn.style.backgroundColor = 'transparent';
@@ -151,7 +141,6 @@
             botonClickeado.style.backgroundColor = '#000932';
             botonClickeado.style.color = 'white';
 
-            // Filtrar las tarjetas
             document.querySelectorAll('.item-indumentaria').forEach(tarjeta => {
                 if (genero === 'Todos' || tarjeta.getAttribute('data-genero') === genero) {
                     tarjeta.style.display = 'flex';

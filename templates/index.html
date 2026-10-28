@@ -57,7 +57,6 @@
         .mapa-contenedor { flex: 1; min-width: 280px; max-width: 500px; border-radius: 12px; overflow: hidden; border: 2px solid #003383; }
         .mapa-contenedor iframe { width: 100%; height: 250px; border: 0; display: block; }
 
-        /* ACÁ ESTÁ EL CAMBIO: Los sponsors ahora están adentro del <style> */
         .seccion-sponsors { padding: 40px 20px; text-align: center; border-top: 2px solid #e0e0e0; background-color: #f5f6f8; }
         .seccion-sponsors h3 { color: #000932; text-transform: uppercase; margin-bottom: 30px; font-size: 18px; letter-spacing: 1px; }
         .grilla-sponsors { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto; }
@@ -66,7 +65,6 @@
 
         .footer-creditos { background-color: #00051a; color: #aaa; text-align: center; padding: 12px; font-size: 13px; }
 
-        /* REGLAS EXCLUSIVAS PARA CELULARES */
         @media (max-width: 768px) {
             nav { flex-direction: column; padding: 10px; }
             .menu { margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
@@ -171,7 +169,7 @@
         <h3>Amigos que nos acompañan:</h3>
         <div class="grilla-sponsors">
             {% for sponsor in sponsors %}
-            <img src="{{ url_for('static', filename='uploads/' + sponsor[2]) }}" alt="{{ sponsor[1] }}" title="{{ sponsor[1] }}">
+            <img src="{{ sponsor[2] }}" alt="{{ sponsor[1] }}" title="{{ sponsor[1] }}">
             {% endfor %}
         </div>
     </section>
