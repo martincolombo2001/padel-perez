@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ titulo }} - Padel Pérez</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f5f6f8; margin: 0; padding: 20px; }
+        .btn-volver { display: inline-block; margin-bottom: 20px; color: #000932; text-decoration: none; font-weight: bold; border: 1px solid #000932; padding: 8px 16px; border-radius: 4px; transition: background 0.3s;}
+        .btn-volver:hover { background-color: #000932; color: white; }
+        
+        h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 10px; font-size: 28px; }
+        .contenedor { max-width: 800px; margin: 0 auto; }
+        
+        .titulo-categoria { background-color: #000932; color: #93b625; padding: 12px; border-radius: 8px; text-align: center; margin-top: 50px; margin-bottom: 20px; text-transform: uppercase; font-size: 22px; }
+        
+        .caja { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h3 { color: #555; margin-bottom: 15px; border-bottom: 2px solid #f5f6f8; padding-bottom: 10px; font-size: 16px; text-transform: uppercase; }
+        
+        /* Tabla de posiciones */
+        .tabla-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 300px; text-align: left; }
+        th { background-color: #f0f2f5; color: #333; padding: 12px 10px; font-size: 13px; text-transform: uppercase; }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 15px; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        .txt-centro { text-align: center; }
+
+        /* Tarjetas de partidos (Fase Grupos) */
+        .partido { border-left: 4px solid #000932; background: #fdfdfd; padding: 15px; margin-bottom: 15px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .partido-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .badge-fase { color: #666; font-size: 13px; font-weight: bold; background: #eee; padding: 3px 8px; border-radius: 4px;}
+        .partido-equipos { color: #000932; font-size: 16px; margin-bottom: 8px; line-height: 1.4; }
+        .partido-resultado { color: #f8111c; font-weight: bold; font-size: 14px; margin-top: 10px; }
+
+        /* Estilos Cuadro Final (Bracket) */
+        .bracket-scroll { overflow-x: auto; padding: 10px 0; }
+        .bracket { display: flex; align-items: stretch; min-width: 500px; gap: 30px; }
+        .bracket-col { display: flex; flex-direction: column; justify-content: space-around; gap: 20px; width: 220px; }
+        .bracket-match { background: #fff; border: 2px solid #000932; border-radius: 6px; padding: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .bracket-match.final-match { border-color: #93b625; background: #fcfdf9; border-width: 3px; }
+        .bracket-fase-etiqueta { font-size: 11px; background: #000932; color: white; padding: 3px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 8px; display: inline-block; }
+        .bracket-equipo { font-size: 14px; color: #333; padding: 5px 0; border-bottom: 1px solid #eee; }
+        .bracket-equipo:last-of-type { border-bottom: none; }
+        .bracket-res { font-size: 12px; font-weight: bold; color: #f8111c; margin-top: 8px; text-align: center; background: #ffeeee; border-radius: 4px; padding: 3px; }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <a href="/ligas" class="btn-volver">← Volver a Ligas</a>
+        <h1>{{ titulo }}</h1>
+
+        {% set categorias = ['5ta', '6ta', '7ma'] %}
+        {% for cat in categorias %}
+        
+            <h2 class="titulo-categoria">Categoría {{ cat }}</h2>
+
+            <!-- CAJA 1: Tabla de Posiciones -->
+            <div class="caja">
+                <h3>Tabla de Posiciones</h3>
+                <div class="tabla-scroll">
+                    <table>
+                        <tr>
+                            <th>Pareja</th>
+                            <th class="txt-centro">Pts</th>
+                            <th class="txt-centro">PJ</th>
+                        </tr>
+                        {% set ns = namespace(hay_equipos=false) %}
+                        {% for equipo in equipos %}
+                            {% if equipo[0] == cat %}
+                            <tr>
+                                <td>
+                                    {{ equipo[1] }} <strong>{{ equipo[2]|upper }}</strong><br>
+                                    {{ equipo[3] }} <strong>{{ equipo[4]|upper }}</strong>
+                                </td>
+                                <td class="txt-centro" style="font-size: 18px;"><strong>{{ equipo[5] }}</strong></td>
+                                <td class="txt-centro">{{ equipo[6] }}</td>
+                            </tr>
+                            {% set ns.hay_equipos = true %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if not ns.hay_equipos %}
+                        <tr><td colspan="3" class="txt-centro" style="padding: 20px; color:#999;">Sin parejas inscriptas.</td></tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+            <!-- Identificador de Playoffs -->
+            {% set ns_play = namespace(semi1=none, semi2=none, final=none) %}
+            {% for partido in partidos %}
+                {% if partido[0] == cat %}
+                    {% if 'Semifinal 1' in partido[1] %}{% set ns_play.semi1 = partido %}{% endif %}
+                    {% if 'Semifinal 2' in partido[1] %}{% set ns_play.semi2 = partido %}{% endif %}
+                    {% if 'Final' in partido[1] %}{% set ns_play.final = partido %}{% endif %}
+                {% endif %}
+            {% endfor %}
+
+            <!-- CAJA 2: CUADRO FINAL (Solo aparece si hay playoffs generados) -->
+            {% if ns_play.semi1 or ns_play.semi2 or ns_play.final %}
+            <div class="caja" style="background-color: #f0f2f5;">
+                <h3 style="color: #000932; border-color: #ccc;">Cuadro Final</h3>
+                <div class="bracket-scroll">
+                    <div class="bracket">
+                        
+                        <!-- Columna Semifinales -->
+                        <div class="bracket-col">
+                            <!-- Semi 1 -->
+                            <div class="bracket-match">
+                                <span class="bracket-fase-etiqueta">SEMIFINAL 1</span>
+                                {% if ns_play.semi1 %}
+                                    <div class="bracket-equipo"><strong>{{ ns_play.semi1[3]|upper }}</strong> / <strong>{{ ns_play.semi1[5]|upper }}</strong></div>
+                                    <div class="bracket-equipo"><strong>{{ ns_play.semi1[7]|upper }}</strong> / <strong>{{ ns_play.semi1[9]|upper }}</strong></div>
+                                    <div class="bracket-res">{{ ns_play.semi1[10] }}</div>
+                                {% else %}
+                                    <div style="color:#999; font-size:12px; text-align:center; padding:10px;">A definir</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Semi 2 -->
+                            <div class="bracket-match">
+                                <span class="bracket-fase-etiqueta">SEMIFINAL 2</span>
+                                {% if ns_play.semi2 %}
+                                    <div class="bracket-equipo"><strong>{{ ns_play.semi2[3]|upper }}</strong> / <strong>{{ ns_play.semi2[5]|upper }}</strong></div>
+                                    <div class="bracket-equipo"><strong>{{ ns_play.semi2[7]|upper }}</strong> / <strong>{{ ns_play.semi2[9]|upper }}</strong></div>
+                                    <div class="bracket-res">{{ ns_play.semi2[10] }}</div>
+                                {% else %}
+                                    <div style="color:#999; font-size:12px; text-align:center; padding:10px;">A definir</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Columna Final -->
+                        <div class="bracket-col" style="justify-content: center;">
+                            <div class="bracket-match final-match">
+                                <span class="bracket-fase-etiqueta" style="background: #93b625; color: #000932;">GRAN FINAL</span>
+                                {% if ns_play.final %}
+                                    <div class="bracket-equipo"><strong>{{ ns_play.final[3]|upper }}</strong> / <strong>{{ ns_play.final[5]|upper }}</strong></div>
+                                    <div class="bracket-equipo"><strong>{{ ns_play.final[7]|upper }}</strong> / <strong>{{ ns_play.final[9]|upper }}</strong></div>
+                                    <div class="bracket-res">{{ ns_play.final[10] }}</div>
+                                {% else %}
+                                    <div style="color:#999; font-size:12px; text-align:center; padding:10px;">Esperando ganadores...</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- CAJA 3: Fixture Regular (Fase de Grupos) -->
+            <div class="caja">
+                <h3>Fixture General</h3>
+                {% set ns_fixture = namespace(hay_partidos=false) %}
+                {% for partido in partidos %}
+                    {% if partido[0] == cat %}
+                    <div class="partido">
+                        <div class="partido-header">
+                            <span class="badge-fase">{{ partido[1] }}</span>
+                        </div>
+                        <div class="partido-equipos">
+                            {{ partido[2] }} <strong>{{ partido[3]|upper }}</strong> / {{ partido[4] }} <strong>{{ partido[5]|upper }}</strong>
+                            <br><span style="color:#999; font-size:12px;">vs</span><br>
+                            {{ partido[6] }} <strong>{{ partido[7]|upper }}</strong> / {{ partido[8] }} <strong>{{ partido[9]|upper }}</strong>
+                        </div>
+                        <div class="partido-resultado">
+                            Resultado: {{ partido[10] }}
+                        </div>
+                    </div>
+                    {% set ns_fixture.hay_partidos = true %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if not ns_fixture.hay_partidos %}
+                <p style="text-align: center; color: #999; padding: 10px 0;">No hay partidos programados.</p>
+                {% endif %}
+            </div>
+
+        {% endfor %}
+
+    </div>
+</body>
+</html>

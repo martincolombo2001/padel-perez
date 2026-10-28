@@ -1,0 +1,297 @@
+import os
+from flask import Flask, render_template, request, redirect, url_for
+from werkzeug.utils import secure_filename
+import psycopg2
+
+app = Flask(__name__)
+
+app.config['CARPETA_FOTOS'] = 'static/uploads'
+os.makedirs(app.config['CARPETA_FOTOS'], exist_ok=True)
+
+def obtener_conexion():
+    # Render nos va a dar una URL secreta cuando subamos la base de datos
+    DATABASE_URL = os.environ.get("DATABASE_URL")
+    
+    if DATABASE_URL:
+        # Si está en internet, usa la conexión de la nube
+        return psycopg2.connect(DATABASE_URL)
+    else:
+        # Si está en tu compu, usa tu conexión local de siempre
+        return psycopg2.connect(
+            dbname="padel_db",
+            user="postgres",
+            password="Luciano7#",
+            host="localhost",
+            port="5432"
+        )
+
+@app.route('/')
+def inicio():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT nombre, categorias, fecha, precio, premios FROM torneos ORDER BY id DESC")
+    torneos_guardados = cursor.fetchall()
+    
+    # Buscamos los sponsors
+    cursor.execute("SELECT id, nombre, imagen FROM sponsors ORDER BY id ASC")
+    sponsors_guardados = cursor.fetchall()
+    
+    conexion.close()
+    return render_template('index.html', torneos=torneos_guardados, sponsors=sponsors_guardados)
+
+@app.route('/ligas')
+def pagina_ligas():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
+    cursor.execute("""
+        SELECT nombre, apellido, SUM(puntos) as total_puntos, categoria
+        FROM (
+            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, rama, categoria FROM equipos_liga
+            UNION ALL
+            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, rama, categoria FROM equipos_liga
+        ) as jugadores
+        WHERE rama = 'Caballeros' AND nombre != ''
+        GROUP BY nombre, apellido, categoria
+        ORDER BY categoria, total_puntos DESC
+    """)
+    ranking_caballeros = cursor.fetchall()
+    
+    cursor.execute("""
+        SELECT nombre, apellido, SUM(puntos) as total_puntos, categoria
+        FROM (
+            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, rama, categoria FROM equipos_liga
+            UNION ALL
+            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, rama, categoria FROM equipos_liga
+        ) as jugadores
+        WHERE rama = 'Damas' AND nombre != ''
+        GROUP BY nombre, apellido, categoria
+        ORDER BY categoria, total_puntos DESC
+    """)
+    ranking_damas = cursor.fetchall()
+    
+    conexion.close()
+    return render_template('ligas.html', ranking_cab=ranking_caballeros, ranking_dam=ranking_damas)
+
+@app.route('/tienda')
+def pagina_tienda():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT id, categoria, genero, producto, talle, precio, imagen FROM tienda ORDER BY id DESC")
+    tienda_guardada = cursor.fetchall()
+    conexion.close()
+    return render_template('tienda.html', tienda=tienda_guardada)
+
+@app.route('/reglamento')
+def pagina_reglamento():
+    return render_template('reglamento.html')
+
+@app.route('/caballeros')
+def liga_caballeros():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT categoria, j1_nombre, j1_apellido, j2_nombre, j2_apellido, puntos, pj FROM equipos_liga WHERE rama = 'Caballeros' ORDER BY categoria, puntos DESC")
+    equipos_guardados = cursor.fetchall()
+    cursor.execute("""
+        SELECT p.categoria, p.fase, 
+               e1.j1_nombre, e1.j1_apellido, e1.j2_nombre, e1.j2_apellido,
+               e2.j1_nombre, e2.j1_apellido, e2.j2_nombre, e2.j2_apellido,
+               p.resultado 
+        FROM partidos_liga p
+        JOIN equipos_liga e1 ON p.equipo1_id = e1.id
+        JOIN equipos_liga e2 ON p.equipo2_id = e2.id
+        WHERE p.rama = 'Caballeros' ORDER BY p.id DESC
+    """)
+    partidos_guardados = cursor.fetchall()
+    conexion.close()
+    return render_template('liga_detalle.html', titulo="Liga Caballeros", equipos=equipos_guardados, partidos=partidos_guardados)
+
+@app.route('/damas')
+def liga_damas():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT categoria, j1_nombre, j1_apellido, j2_nombre, j2_apellido, puntos, pj FROM equipos_liga WHERE rama = 'Damas' ORDER BY categoria, puntos DESC")
+    equipos_guardados = cursor.fetchall()
+    cursor.execute("""
+        SELECT p.categoria, p.fase, 
+               e1.j1_nombre, e1.j1_apellido, e1.j2_nombre, e1.j2_apellido,
+               e2.j1_nombre, e2.j1_apellido, e2.j2_nombre, e2.j2_apellido,
+               p.resultado 
+        FROM partidos_liga p
+        JOIN equipos_liga e1 ON p.equipo1_id = e1.id
+        JOIN equipos_liga e2 ON p.equipo2_id = e2.id
+        WHERE p.rama = 'Damas' ORDER BY p.id DESC
+    """)
+    partidos_guardados = cursor.fetchall()
+    conexion.close()
+    return render_template('liga_detalle.html', titulo="Liga Damas", equipos=equipos_guardados, partidos=partidos_guardados)
+
+@app.route('/admin', methods=['GET', 'POST'])
+def panel_admin():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+
+    if request.method == 'POST':
+        accion = request.form.get('accion')
+
+        if accion == 'nuevo_torneo':
+            cursor.execute("INSERT INTO torneos (nombre, categorias, fecha, precio, premios) VALUES (%s, %s, %s, %s, %s)",
+                (request.form.get('nombre', ''), request.form.get('categorias', ''), request.form.get('fecha', ''), request.form.get('precio', ''), request.form.get('premios', '')))
+        
+        elif accion == 'nuevo_producto':
+            categoria = request.form.get('categoria', '')
+            genero = request.form.get('genero', '')
+            producto = request.form.get('producto', '')
+            talle = request.form.get('talle', '')
+            precio_prod = request.form.get('precio_prod', '')
+            foto = request.files.get('imagen')
+            nombre_foto = 'default.png'
+            if foto and foto.filename != '':
+                nombre_foto = secure_filename(foto.filename)
+                foto.save(os.path.join(app.config['CARPETA_FOTOS'], nombre_foto))
+            cursor.execute("INSERT INTO tienda (categoria, genero, producto, talle, precio, imagen) VALUES (%s, %s, %s, %s, %s, %s)",
+                (categoria, genero, producto, talle, precio_prod, nombre_foto))
+        
+        elif accion == 'nuevo_equipo':
+            cursor.execute("INSERT INTO equipos_liga (rama, categoria, j1_nombre, j1_apellido, j2_nombre, j2_apellido) VALUES (%s, %s, %s, %s, %s, %s)",
+                (request.form.get('rama', ''), request.form.get('categoria', ''), request.form.get('j1_nombre', ''), request.form.get('j1_apellido', ''), request.form.get('j2_nombre', ''), request.form.get('j2_apellido', '')))
+        
+        elif accion == 'nuevo_partido':
+            cursor.execute("INSERT INTO partidos_liga (rama, categoria, fase, equipo1_id, equipo2_id) VALUES (%s, %s, %s, %s, %s)",
+                (request.form.get('rama', ''), request.form.get('categoria', ''), request.form.get('fase', ''), request.form.get('equipo1', ''), request.form.get('equipo2', '')))
+
+        elif accion == 'nuevo_sponsor':
+            nombre = request.form.get('nombre', '')
+            foto = request.files.get('imagen')
+            nombre_foto = 'default_sponsor.png'
+            if foto and foto.filename != '':
+                nombre_foto = secure_filename(foto.filename)
+                foto.save(os.path.join(app.config['CARPETA_FOTOS'], nombre_foto))
+            cursor.execute("INSERT INTO sponsors (nombre, imagen) VALUES (%s, %s)", (nombre, nombre_foto))
+
+        conexion.commit()
+        return redirect(url_for('panel_admin'))
+
+    cursor.execute("SELECT id, nombre, fecha FROM torneos ORDER BY id DESC")
+    torneos_guardados = cursor.fetchall()
+    
+    cursor.execute("SELECT id, categoria, genero, producto, talle, precio, imagen FROM tienda ORDER BY id DESC")
+    tienda_guardada = cursor.fetchall()
+    
+    cursor.execute("SELECT id, rama, categoria, j1_nombre, j1_apellido, j2_nombre, j2_apellido, puntos, pj FROM equipos_liga ORDER BY rama, categoria")
+    equipos_guardados = cursor.fetchall()
+
+    cursor.execute("SELECT id, nombre, imagen FROM sponsors ORDER BY id ASC")
+    sponsors_guardados = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT p.id, p.rama, p.categoria, p.fase, 
+               e1.j1_apellido, e1.j2_apellido, 
+               e2.j1_apellido, e2.j2_apellido, 
+               p.resultado 
+        FROM partidos_liga p
+        JOIN equipos_liga e1 ON p.equipo1_id = e1.id
+        JOIN equipos_liga e2 ON p.equipo2_id = e2.id
+        ORDER BY p.id DESC
+    """)
+    partidos_guardados = cursor.fetchall()
+    
+    conexion.close()
+    return render_template('admin.html', torneos=torneos_guardados, tienda=tienda_guardada, equipos=equipos_guardados, partidos=partidos_guardados, sponsors=sponsors_guardados)
+
+@app.route('/actualizar_resultado', methods=['POST'])
+def actualizar_resultado():
+    id_partido = request.form.get('id_partido')
+    ganador = request.form.get('ganador')
+    cant_sets = request.form.get('cant_sets')
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+
+    cursor.execute("SELECT equipo1_id, equipo2_id, resultado FROM partidos_liga WHERE id = %s", (id_partido,))
+    partido = cursor.fetchone()
+
+    if partido and partido[2] == 'Pendiente':
+        e1_id = partido[0]
+        e2_id = partido[1]
+        cursor.execute("UPDATE partidos_liga SET resultado = %s WHERE id = %s", (request.form.get('resultado_texto', ''), id_partido))
+        
+        pts_eq1, pts_eq2 = 0, 0
+        if ganador == 'equipo1':
+            pts_eq1 = 3
+            pts_eq2 = 1 if cant_sets == '3' else 0
+        elif ganador == 'equipo2':
+            pts_eq2 = 3
+            pts_eq1 = 1 if cant_sets == '3' else 0
+        elif ganador == 'empate':
+            pts_eq1 = 1
+            pts_eq2 = 1
+
+        cursor.execute("UPDATE equipos_liga SET puntos = puntos + %s, pj = pj + 1 WHERE id = %s", (pts_eq1, e1_id))
+        cursor.execute("UPDATE equipos_liga SET puntos = puntos + %s, pj = pj + 1 WHERE id = %s", (pts_eq2, e2_id))
+
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
+@app.route('/generar_semis', methods=['POST'])
+def generar_semis():
+    rama = request.form.get('rama')
+    categoria = request.form.get('categoria')
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT id FROM equipos_liga WHERE rama = %s AND categoria = %s ORDER BY puntos DESC LIMIT 4", (rama, categoria))
+    top4 = cursor.fetchall()
+    if len(top4) >= 4:
+        cursor.execute("INSERT INTO partidos_liga (rama, categoria, fase, equipo1_id, equipo2_id) VALUES (%s, %s, 'Semifinal 1', %s, %s)", (rama, categoria, top4[0][0], top4[3][0]))
+        cursor.execute("INSERT INTO partidos_liga (rama, categoria, fase, equipo1_id, equipo2_id) VALUES (%s, %s, 'Semifinal 2', %s, %s)", (rama, categoria, top4[1][0], top4[2][0]))
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
+@app.route('/eliminar/<int:id_torneo>')
+def eliminar_torneo(id_torneo):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM torneos WHERE id = %s", (id_torneo,))
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
+@app.route('/eliminar_producto/<int:id_producto>')
+def eliminar_producto(id_producto):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM tienda WHERE id = %s", (id_producto,))
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
+@app.route('/eliminar_equipo/<int:id_equipo>')
+def eliminar_equipo(id_equipo):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM equipos_liga WHERE id = %s", (id_equipo,))
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
+@app.route('/eliminar_partido/<int:id_partido>')
+def eliminar_partido(id_partido):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM partidos_liga WHERE id = %s", (id_partido,))
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
+@app.route('/eliminar_sponsor/<int:id_sponsor>')
+def eliminar_sponsor(id_sponsor):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM sponsors WHERE id = %s", (id_sponsor,))
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)

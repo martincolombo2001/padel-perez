@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda Oficial - Padel Pérez</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f5f6f8; margin: 0; padding: 20px; }
+        .btn-volver { display: inline-block; margin-bottom: 20px; color: #000932; text-decoration: none; font-weight: bold; border: 1px solid #000932; padding: 8px 16px; border-radius: 4px; transition: background 0.3s;}
+        .btn-volver:hover { background-color: #000932; color: white; }
+        
+        h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 30px; font-size: 28px; }
+        .contenedor { max-width: 1000px; margin: 0 auto; }
+
+        /* Botonera de Secciones */
+        .grilla-botones { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; justify-content: center; }
+        .tarjeta-opcion { flex: 1; min-width: 250px; max-width: 400px; background-color: #000932; color: white; text-align: center; padding: 25px 15px; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s; border: none; font-family: inherit;}
+        .tarjeta-opcion:hover { transform: translateY(-5px); background-color: #001f5c; }
+        .tarjeta-opcion h2 { margin: 0 0 10px 0; color: #93b625; font-size: 22px; text-transform: uppercase; }
+        .tarjeta-opcion.activa { border: 3px solid #93b625; background-color: #001f5c; }
+
+        /* NUEVO: Filtros de Indumentaria */
+        .filtros-secundarios { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .btn-filtro { padding: 8px 16px; border: 1px solid #000932; background-color: transparent; color: #000932; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.2s; font-size: 14px;}
+        .btn-filtro.activo { background-color: #000932; color: white; }
+        .btn-filtro:hover { background-color: #000932; color: white; }
+
+        /* Grilla de Productos */
+        .seccion-tienda { display: none; }
+        .seccion-tienda.activa { display: block; }
+        .grilla-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        
+        /* Tarjetas de Producto */
+        .producto-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; text-align: center; }
+        .producto-img-container { width: 100%; height: 250px; background-color: #fff; display: flex; justify-content: center; align-items: center; overflow: hidden; border-bottom: 1px solid #eee; }
+        .producto-img-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        
+        .producto-info { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
+        .producto-categoria { font-size: 12px; color: #999; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .producto-nombre { font-size: 18px; color: #000932; margin: 0 0 10px 0; font-weight: bold; }
+        .producto-talle { font-size: 14px; color: #555; margin-bottom: 15px; }
+        .producto-precio { font-size: 22px; color: #93b625; font-weight: bold; margin-bottom: 20px; }
+        
+        .btn-comprar { background-color: #25D366; color: white; text-decoration: none; padding: 12px; border-radius: 6px; font-weight: bold; margin-top: auto; display: inline-block; transition: background 0.3s; }
+        .btn-comprar:hover { background-color: #1ebe5d; }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <a href="/" class="btn-volver">← Volver al Inicio</a>
+        <h1>Tienda Oficial</h1>
+
+        <div class="grilla-botones">
+            <button class="tarjeta-opcion activa" onclick="mostrarSeccion('equipamiento', this)">
+                <h2>Equipamiento de Padel</h2>
+                <p style="color: #ddd; margin: 0;">Paletas, bolsos y accesorios</p>
+            </button>
+            <button class="tarjeta-opcion" onclick="mostrarSeccion('indumentaria', this)">
+                <h2>Indumentaria</h2>
+                <p style="color: #ddd; margin: 0;">Caballeros y Damas</p>
+            </button>
+        </div>
+
+        <!-- SECCIÓN: EQUIPAMIENTO -->
+        <div id="equipamiento" class="seccion-tienda activa">
+            <div class="grilla-productos">
+                {% set ns_eq = namespace(hay=false) %}
+                {% for prod in tienda %}
+                    {% if prod[1] == 'Equipamiento de Padel' %}
+                    <div class="producto-card">
+                        <div class="producto-img-container">
+                            <img src="{{ url_for('static', filename='uploads/' + prod[6]) }}" alt="{{ prod[3] }}">
+                        </div>
+                        <div class="producto-info">
+                            <span class="producto-categoria">Equipamiento</span>
+                            <h3 class="producto-nombre">{{ prod[3] }}</h3>
+                            <div class="producto-precio">{{ prod[5] }}</div>
+                            <a href="https://wa.me/5493410000000?text=Hola,%20me%20interesa%20el%20producto:%20{{ prod[3] }}" class="btn-comprar" target="_blank">Consultar Disponibilidad</a>
+                        </div>
+                    </div>
+                    {% set ns_eq.hay = true %}
+                    {% endif %}
+                {% endfor %}
+                {% if not ns_eq.hay %}
+                    <p style="text-align: center; grid-column: 1 / -1; color: #999;">Próximamente nuevos ingresos de equipamiento.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SECCIÓN: INDUMENTARIA -->
+        <div id="indumentaria" class="seccion-tienda">
+            
+            <!-- NUEVO: Sub-menú de Filtros -->
+            <div class="filtros-secundarios">
+                <button class="btn-filtro activo" onclick="filtrarIndumentaria('Todos', this)">Todos</button>
+                <button class="btn-filtro" onclick="filtrarIndumentaria('Caballeros', this)">Caballeros</button>
+                <button class="btn-filtro" onclick="filtrarIndumentaria('Damas', this)">Damas</button>
+                <button class="btn-filtro" onclick="filtrarIndumentaria('No aplica', this)">Unisex</button>
+            </div>
+
+            <div class="grilla-productos">
+                {% set ns_ind = namespace(hay=false) %}
+                {% for prod in tienda %}
+                    {% if prod[1] == 'Indumentaria' %}
+                    <!-- Inyectamos el atributo data-genero para que JS lo identifique -->
+                    <div class="producto-card item-indumentaria" data-genero="{{ prod[2] }}">
+                        <div class="producto-img-container">
+                            <img src="{{ url_for('static', filename='uploads/' + prod[6]) }}" alt="{{ prod[3] }}">
+                        </div>
+                        <div class="producto-info">
+                            <span class="producto-categoria">{% if prod[2] == 'No aplica' %}Unisex{% else %}{{ prod[2] }}{% endif %}</span>
+                            <h3 class="producto-nombre">{{ prod[3] }}</h3>
+                            <div class="producto-talle">Talle: <strong>{{ prod[4] }}</strong></div>
+                            <div class="producto-precio">{{ prod[5] }}</div>
+                            <a href="https://wa.me/5493410000000?text=Hola,%20me%20interesa%20la%20prenda:%20{{ prod[3] }}%20(Talle:%20{{ prod[4] }})" class="btn-comprar" target="_blank">Consultar Disponibilidad</a>
+                        </div>
+                    </div>
+                    {% set ns_ind.hay = true %}
+                    {% endif %}
+                {% endfor %}
+                {% if not ns_ind.hay %}
+                    <p style="text-align: center; grid-column: 1 / -1; color: #999;">Próximamente nuevos ingresos de indumentaria.</p>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Función para cambiar entre Equipamiento e Indumentaria
+        function mostrarSeccion(seccionId, botonClickeado) {
+            document.querySelectorAll('.seccion-tienda').forEach(seccion => {
+                seccion.classList.remove('activa');
+            });
+            document.querySelectorAll('.tarjeta-opcion').forEach(btn => {
+                btn.classList.remove('activa');
+            });
+            
+            document.getElementById(seccionId).classList.add('activa');
+            botonClickeado.classList.add('activa');
+        }
+
+        // NUEVO: Función para filtrar los productos de Indumentaria
+        function filtrarIndumentaria(genero, botonClickeado) {
+            // Pintar el botón activo
+            document.querySelectorAll('.btn-filtro').forEach(btn => {
+                btn.classList.remove('activa');
+                btn.style.backgroundColor = 'transparent';
+                btn.style.color = '#000932';
+            });
+            botonClickeado.style.backgroundColor = '#000932';
+            botonClickeado.style.color = 'white';
+
+            // Filtrar las tarjetas
+            document.querySelectorAll('.item-indumentaria').forEach(tarjeta => {
+                if (genero === 'Todos' || tarjeta.getAttribute('data-genero') === genero) {
+                    tarjeta.style.display = 'flex';
+                } else {
+                    tarjeta.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

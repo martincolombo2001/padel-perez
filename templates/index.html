@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padel Pérez</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        nav { background-color: #000932; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 100; }
+        .logo { color: white; font-size: 22px; font-weight: bold; text-decoration: none; letter-spacing: 1px; }
+        .logo span { color: #93b625; }
+        .menu a { color: white; text-decoration: none; margin-left: 15px; font-size: 13px; text-transform: uppercase; font-weight: bold; transition: color 0.3s; }
+        .menu a:hover { color: #f8111c; }
+
+        .hero { height: 100vh; position: relative; display: flex; align-items: center; justify-content: center; text-align: center; overflow: hidden; background-color: #000932; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 9, 50, 0.6); z-index: 1; }
+        .video-fondo { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); object-fit: cover; z-index: 0; }
+        
+        .hero-content { position: relative; z-index: 2; color: white; padding: 20px; }
+        .hero-content h1 { font-size: 45px; margin-bottom: 15px; text-shadow: 2px 2px 8px rgba(0,0,0,0.7); }
+        .hero-content p { font-size: 18px; margin-bottom: 40px; color: #e0e0e0; }
+        .btn-principal { background-color: #93b625; color: #000932; padding: 14px 30px; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 8px; transition: all 0.3s ease; text-transform: uppercase; box-shadow: 0 4px 15px rgba(147, 182, 37, 0.4); }
+        .btn-principal:hover { background-color: white; color: #000932; box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4); }
+
+        .seccion-torneos { background-color: #f5f6f8; padding: 70px 20px; text-align: center; }
+        .seccion-torneos h2 { color: #000932; font-size: 30px; margin-bottom: 35px; text-transform: uppercase; }
+        .tarjeta-torneo { background-color: white; max-width: 380px; margin: 0 auto; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); overflow: hidden; text-align: left; }
+        .tarjeta-cabecera { background-color: #003383; color: white; padding: 15px; text-align: center; }
+        .tarjeta-cabecera h3 { font-size: 22px; margin-bottom: 8px; }
+        .tarjeta-cabecera span { font-size: 11px; background-color: #93b625; color: #000932; padding: 4px 10px; border-radius: 20px; font-weight: bold; text-transform: uppercase; }
+        .tarjeta-cuerpo { padding: 20px; color: #333; }
+        .tarjeta-cuerpo p { font-size: 15px; margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .tarjeta-cuerpo p strong { color: #000932; }
+        .btn-inscribirse { display: block; background-color: #f8111c; color: white; text-align: center; padding: 12px; text-decoration: none; font-weight: bold; font-size: 16px; border-radius: 8px; margin-top: 15px; transition: background 0.3s; }
+        .btn-inscribirse:hover { background-color: #d10e16; }
+
+        .seccion-accesos { display: flex; flex-wrap: wrap; padding: 60px 20px; gap: 20px; justify-content: center; background-color: white; }
+        .acceso-caja { flex: 1; min-width: 280px; max-width: 450px; background-color: #000932; color: white; padding: 40px 25px; border-radius: 12px; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.15); transition: transform 0.3s; }
+        .acceso-caja:hover { transform: translateY(-5px); }
+        .acceso-caja h3 { font-size: 24px; margin-bottom: 12px; color: #93b625; text-transform: uppercase; }
+        .acceso-caja p { font-size: 15px; margin-bottom: 20px; color: #e0e0e0; }
+        .btn-acceso { display: inline-block; background-color: white; color: #000932; padding: 10px 25px; text-decoration: none; font-weight: bold; border-radius: 8px; transition: background 0.3s; font-size: 15px; }
+        .btn-acceso:hover { background-color: #003383; color: white; }
+
+        .seccion-galeria { background-color: white; padding: 70px 20px; text-align: center; }
+        .seccion-galeria h2 { color: #000932; font-size: 30px; margin-bottom: 35px; text-transform: uppercase; }
+        .grilla-galeria { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; max-width: 1200px; margin: 0 auto; }
+        .grilla-galeria img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; transition: transform 0.3s ease; }
+        .grilla-galeria img:hover { transform: scale(1.03); }
+
+        .seccion-contacto { background-color: #000932; color: white; padding: 50px 20px; display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; align-items: center; }
+        .contacto-info { flex: 1; min-width: 280px; max-width: 450px; }
+        .contacto-info h2 { color: #93b625; font-size: 28px; margin-bottom: 15px; text-transform: uppercase; }
+        .contacto-info p { font-size: 15px; margin-bottom: 12px; color: #e0e0e0; line-height: 1.5; }
+        .btn-redes { display: inline-block; background-color: #f8111c; color: white; padding: 8px 16px; text-decoration: none; font-weight: bold; border-radius: 6px; margin-top: 10px; font-size: 14px;}
+        .mapa-contenedor { flex: 1; min-width: 280px; max-width: 500px; border-radius: 12px; overflow: hidden; border: 2px solid #003383; }
+        .mapa-contenedor iframe { width: 100%; height: 250px; border: 0; display: block; }
+
+        /* ACÁ ESTÁ EL CAMBIO: Los sponsors ahora están adentro del <style> */
+        .seccion-sponsors { padding: 40px 20px; text-align: center; border-top: 2px solid #e0e0e0; background-color: #f5f6f8; }
+        .seccion-sponsors h3 { color: #000932; text-transform: uppercase; margin-bottom: 30px; font-size: 18px; letter-spacing: 1px; }
+        .grilla-sponsors { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto; }
+        .grilla-sponsors img { max-width: 140px; max-height: 70px; object-fit: contain; filter: grayscale(100%); opacity: 0.6; transition: all 0.3s ease; }
+        .grilla-sponsors img:hover { filter: grayscale(0%); opacity: 1; transform: scale(1.05); }
+
+        .footer-creditos { background-color: #00051a; color: #aaa; text-align: center; padding: 12px; font-size: 13px; }
+
+        /* REGLAS EXCLUSIVAS PARA CELULARES */
+        @media (max-width: 768px) {
+            nav { flex-direction: column; padding: 10px; }
+            .menu { margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .menu a { margin: 0 5px; font-size: 12px; }
+            .hero-content h1 { font-size: 32px; }
+            .hero-content p { font-size: 15px; }
+            .seccion-torneos h2, .seccion-galeria h2, .contacto-info h2 { font-size: 24px; }
+            .acceso-caja h3 { font-size: 20px; }
+            .grilla-galeria img { height: 180px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="logo" style="display: flex; align-items: center;">
+            <img src="/static/logo.png" alt="Logo" style="height: 35px; margin-right: 10px;">
+            PADEL<span>PÉREZ</span>
+        </a>
+        <div class="menu">
+            <a href="/">Inicio</a>
+            <a href="#torneos">Torneos</a>
+            <a href="/ligas">Ligas</a>
+            <a href="/tienda">Tienda</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <video class="video-fondo" autoplay loop muted playsinline>
+            <source src="/static/IMG_8975.mp4" type="video/mp4">
+        </video>
+        <div class="overlay"></div>
+        <div class="hero-content">
+            <h1>Tu partido y el mejor tercer tiempo</h1>
+            <p>Fácil llegar, difícil irse</p>
+            <a href="https://wa.me/5493412852271?text=Hola,%20quiero%20reservar%20una%20cancha" target="_blank" class="btn-principal">Reservar Turno</a>
+        </div>
+    </section>
+
+    <section class="seccion-torneos" id="torneos">
+        <h2>Próximos Torneos</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+            {% for torneo in torneos %}
+            <div class="tarjeta-torneo">
+                <div class="tarjeta-cabecera">
+                    <h3>{{ torneo[0] }}</h3>
+                    <span>Inscripciones Abiertas</span>
+                </div>
+                <div class="tarjeta-cuerpo">
+                    <p><strong>Categorías:</strong> {{ torneo[1] }}</p>
+                    <p><strong>Fecha:</strong> {{ torneo[2] }}</p>
+                    <p><strong>Inscripción:</strong> {{ torneo[3] }}</p>
+                    <p><strong>Premios:</strong> {{ torneo[4] }}</p>
+                    <a href="https://wa.me/5493412852271?text=Hola,%20quiero%20anotarme%20al%20{{ torneo[0] }}" target="_blank" class="btn-inscribirse">Inscribirme</a>
+                </div>
+            </div>
+            {% else %}
+            <p>No hay torneos programados por el momento.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="seccion-accesos" id="accesos">
+        <div class="acceso-caja">
+            <h3>Ligas Padel Pérez</h3>
+            <p>Caballeros, Damas, Resultados y Rankings Oficiales.</p>
+            <a href="/ligas" class="btn-acceso">Entrar a Ligas</a>
+        </div>
+        <div class="acceso-caja">
+            <h3>Nuestra Tienda</h3>
+            <p>Conocé todos nuestros accesorios, paletas e indumentaria oficial.</p>
+            <a href="/tienda" class="btn-acceso">Entrar a la Tienda</a>
+        </div>
+    </section>
+
+    <section class="seccion-galeria" id="galeria">
+        <h2>El Complejo en Acción</h2>
+        <div class="grilla-galeria">
+            <img src="/static/foto1.jpeg" alt="Gente jugando al padel">
+            <img src="/static/foto2.png" alt="Instalaciones del complejo">
+            <img src="/static/foto3.png" alt="Tercer tiempo en el bar">
+            <img src="/static/foto4.jpeg" alt="Torneo en Padel Pérez">
+        </div>
+    </section>
+
+    <section class="seccion-contacto" id="contacto">
+        <div class="contacto-info">
+            <h2>El Complejo</h2>
+            <p><strong>Ubicación:</strong> Pérez, Santa Fe.<br>Vení a disfrutar del mejor césped sintético y quedate al tercer tiempo en el bar.</p>
+            <p><strong>Horarios:</strong><br>Lunes a Jueves: 09:00 a 00:00 hs<br>Viernes, Sábados y Domingos: 09:00 a 01:30 hs</p>
+            <p><strong>WhatsApp:</strong> +54 9 341 285-2271</p>
+            <div class="redes">
+                <a href="https://instagram.com/padel.perez" target="_blank" class="btn-redes">Seguinos en Instagram</a>
+            </div>
+        </div>
+        <div class="mapa-contenedor">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d820.5426198861579!2d-60.77682277908383!3d-33.00146554059343!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95b7b30032baa881%3A0xc72c2f0683bf5c71!2sPadel%20P%C3%A9rez!5e1!3m2!1ses-419!2sar!4v1792175885893!5m2!1ses-419!2sar" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        </div>
+    </section>
+
+    <section class="seccion-sponsors">
+        <h3>Amigos que nos acompañan:</h3>
+        <div class="grilla-sponsors">
+            {% for sponsor in sponsors %}
+            <img src="{{ url_for('static', filename='uploads/' + sponsor[2]) }}" alt="{{ sponsor[1] }}" title="{{ sponsor[1] }}">
+            {% endfor %}
+        </div>
+    </section>
+
+    <div class="footer-creditos">
+        <p>&copy; 2026 Padel Pérez. Todos los derechos reservados. | <a href="/admin" style="color: #666; text-decoration: none;">Admin</a></p>
+    </div>
+
+</body>
+</html>

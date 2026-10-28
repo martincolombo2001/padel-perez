@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub de Ligas - Padel Pérez</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f5f6f8; margin: 0; padding: 20px; }
+        .btn-volver { display: inline-block; margin-bottom: 20px; color: #000932; text-decoration: none; font-weight: bold; border: 1px solid #000932; padding: 8px 16px; border-radius: 4px; transition: background 0.3s;}
+        .btn-volver:hover { background-color: #000932; color: white; }
+        
+        h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 30px; font-size: 28px; }
+        .contenedor { max-width: 800px; margin: 0 auto; }
+        
+        /* Botonera principal */
+        .grilla-botones { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; }
+        .tarjeta-opcion { flex: 1; min-width: 200px; background-color: #000932; color: white; text-align: center; padding: 25px 15px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .tarjeta-opcion:hover { transform: translateY(-5px); background-color: #001f5c; }
+        .tarjeta-opcion h2 { margin: 0 0 10px 0; color: #93b625; font-size: 22px; text-transform: uppercase; }
+        .tarjeta-opcion p { margin: 0; font-size: 14px; color: #ddd; }
+
+        /* Módulos de Ranking */
+        .caja-ranking { background: white; padding: 20px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .caja-ranking h3 { color: #555; margin-top: 0; margin-bottom: 15px; border-bottom: 2px solid #f5f6f8; padding-bottom: 10px; font-size: 18px; text-transform: uppercase; }
+        
+        .tabla-scroll { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 300px; text-align: left; }
+        th { background-color: #f0f2f5; color: #333; padding: 12px 10px; font-size: 13px; text-transform: uppercase; }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 15px; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        
+        .puesto { font-weight: bold; color: #000932; font-size: 16px; width: 30px; text-align: center; }
+        .txt-centro { text-align: center; }
+        .puntos-destacados { font-size: 18px; font-weight: bold; color: #93b625; }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <a href="/" class="btn-volver">← Volver al Inicio</a>
+        
+        <h1>Central de Ligas</h1>
+
+        <!-- MENÚ DE NAVEGACIÓN -->
+        <div class="grilla-botones">
+            <a href="/caballeros" class="tarjeta-opcion">
+                <h2>Caballeros</h2>
+                <p>Ver posiciones y fixtures</p>
+            </a>
+            <a href="/damas" class="tarjeta-opcion">
+                <h2>Damas</h2>
+                <p>Ver posiciones y fixtures</p>
+            </a>
+            <a href="/reglamento" class="tarjeta-opcion" style="background-color: #555;">
+                <h2 style="color: white;">Reglamento</h2>
+                <p>Normas oficiales</p>
+            </a>
+        </div>
+<!-- RANKING ANUAL CABALLEROS -->
+        <div class="caja-ranking">
+            <h2 style="color: #000932; text-align: center; border-bottom: 2px solid #000932; padding-bottom: 15px;">TOP 10 ANUAL - CABALLEROS</h2>
+            
+            {% set categorias = ['5ta', '6ta', '7ma'] %}
+            {% for cat in categorias %}
+                <h3 style="color: #93b625; margin-top: 30px;">Categoría {{ cat }}</h3>
+                <div class="tabla-scroll">
+                    <table>
+                        <tr>
+                            <th class="txt-centro">#</th>
+                            <th>Jugador</th>
+                            <th class="txt-centro">Puntos</th>
+                        </tr>
+                        {% set ns = namespace(contador=1, hay_jugadores=false) %}
+                        {% for jugador in ranking_cab %}
+                            {% if jugador[3] == cat and ns.contador <= 10 %}
+                            <tr>
+                                <td class="puesto">{{ ns.contador }}</td>
+                                <td>{{ jugador[0] }} <strong>{{ jugador[1]|upper }}</strong></td>
+                                <td class="txt-centro puntos-destacados">{{ jugador[2] }}</td>
+                            </tr>
+                            {% set ns.contador = ns.contador + 1 %}
+                            {% set ns.hay_jugadores = true %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if not ns.hay_jugadores %}
+                        <tr><td colspan="3" class="txt-centro" style="padding: 20px; color:#999;">Aún no hay puntos registrados.</td></tr>
+                        {% endif %}
+                    </table>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- RANKING ANUAL DAMAS -->
+        <div class="caja-ranking">
+            <h2 style="color: #000932; text-align: center; border-bottom: 2px solid #000932; padding-bottom: 15px;">TOP 10 ANUAL - DAMAS</h2>
+            
+            {% set categorias = ['5ta', '6ta', '7ma'] %}
+            {% for cat in categorias %}
+                <h3 style="color: #93b625; margin-top: 30px;">Categoría {{ cat }}</h3>
+                <div class="tabla-scroll">
+                    <table>
+                        <tr>
+                            <th class="txt-centro">#</th>
+                            <th>Jugadora</th>
+                            <th class="txt-centro">Puntos</th>
+                        </tr>
+                        {% set ns = namespace(contador=1, hay_jugadoras=false) %}
+                        {% for jugadora in ranking_dam %}
+                            {% if jugadora[3] == cat and ns.contador <= 10 %}
+                            <tr>
+                                <td class="puesto">{{ ns.contador }}</td>
+                                <td>{{ jugadora[0] }} <strong>{{ jugadora[1]|upper }}</strong></td>
+                                <td class="txt-centro puntos-destacados">{{ jugadora[2] }}</td>
+                            </tr>
+                            {% set ns.contador = ns.contador + 1 %}
+                            {% set ns.hay_jugadoras = true %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if not ns.hay_jugadoras %}
+                        <tr><td colspan="3" class="txt-centro" style="padding: 20px; color:#999;">Aún no hay puntos registrados.</td></tr>
+                        {% endif %}
+                    </table>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

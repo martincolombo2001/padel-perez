@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Rankings - Padel Pérez</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f5f6f8; margin: 0; padding: 40px; text-align: center; }
+        .btn-volver { display: inline-block; margin-bottom: 30px; color: #000932; text-decoration: none; font-weight: bold; border: 1px solid #000932; padding: 8px 16px; border-radius: 4px; }
+        
+        /* Esta es la caja azul que pediste */
+        .caja-azul { 
+            background-color: #000932; 
+            color: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            max-width: 500px; 
+            margin: 0 auto; 
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2); 
+        }
+        
+        .lista-rankings { list-style: none; padding: 0; margin: 0; }
+        .lista-rankings li { 
+            padding: 15px; 
+            border-bottom: 1px solid rgba(255,255,255,0.2); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            font-size: 18px;
+        }
+        /* Le sacamos el borde al último para que quede más prolijo */
+        .lista-rankings li:last-child { border-bottom: none; }
+        .puntos { font-weight: bold; color: #25D366; font-size: 22px; }
+    </style>
+</head>
+<body>
+    <a href="/" class="btn-volver">← Volver al Inicio</a>
+    
+    <h1 style="color: #000932;">Ranking Oficial</h1>
+    <p style="color: #666; margin-bottom: 40px;">Los mejores jugadores de Padel Pérez.</p>
+
+    <div class="caja-azul">
+        <ul class="lista-rankings">
+            {% for rank in rankings %}
+            <li>
+                <span><strong>#</strong> {{ rank[0] }} ({{ rank[1] }})</span>
+                <span class="puntos">{{ rank[2] }} pts</span>
+            </li>
+            {% else %}
+            <p style="text-align: center;">Todavía no hay jugadores clasificados.</p>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Central - Padel Pérez</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #eef2f5; margin: 0; padding: 20px; }
+        .cabecera { background-color: #000932; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        .grilla-panel { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: flex-start; }
+        .formulario { background: white; padding: 25px; border-radius: 8px; width: 320px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        h3 { color: #000932; margin-top: 0; border-bottom: 2px solid #eef2f5; padding-bottom: 10px; }
+        label { font-size: 14px; color: #555; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; margin: 8px 0 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background-color: #000932; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #003383; }
+        .lista-items { list-style: none; padding: 0; margin-top: 20px; }
+        .lista-items li { background: #f9f9f9; padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
+        .btn-borrar { background-color: #dc3545; color: white; padding: 4px 8px; text-decoration: none; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="cabecera">
+        <h1>Centro de Comandos</h1>
+        <a href="/" style="color: white; text-decoration: underline;">Volver a la página principal</a>
+    </div>
+
+    <div class="grilla-panel">
+        <!-- MÓDULO SPONSORS -->
+        <div class="formulario">
+            <h3 style="color: #000932;">Cargar Sponsor</h3>
+            <form action="/admin" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="accion" value="nuevo_sponsor">
+                
+                <label>Nombre de la Empresa:</label>
+                <input type="text" name="nombre" required>
+                
+                <label>Logo del Sponsor:</label>
+                <input type="file" name="imagen" accept="image/*" required style="border: none; padding: 0;">
+                
+                <button type="submit" style="margin-top: 10px;">Publicar Sponsor</button>
+            </form>
+            <ul class="lista-items">
+                {% for sponsor in sponsors %}
+                <li>{{ sponsor[1] }} <a href="/eliminar_sponsor/{{ sponsor[0] }}" class="btn-borrar">X</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <!-- MÓDULO TORNEOS -->
+        <div class="formulario">
+            <h3>Cargar Torneo</h3>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="accion" value="nuevo_torneo">
+                
+                <label>Nombre:</label>
+                <input type="text" name="nombre" required>
+                <label>Categorías:</label>
+                <input type="text" name="categorias" required>
+                <label>Fecha:</label>
+                <input type="text" name="fecha" required>
+                <label>Precio:</label>
+                <input type="text" name="precio" required>
+                <label>Premios:</label>
+                <input type="text" name="premios" required>
+                <button type="submit">Guardar Torneo</button>
+            </form>
+            <ul class="lista-items">
+                {% for torneo in torneos %}
+                <li>{{ torneo[1] }} <a href="/eliminar/{{ torneo[0] }}" class="btn-borrar">X</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- MÓDULO RANKINGS -->
+        <div class="formulario">
+            <h3>Cargar Jugador al Ranking</h3>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="accion" value="nuevo_ranking">
+                
+                <label>Nombre del Jugador:</label>
+                <input type="text" name="jugador" required>
+                <label>Categoría (Ej: 6ta):</label>
+                <input type="text" name="categoria" required>
+                <label>Puntos Totales:</label>
+                <input type="number" name="puntos" required>
+                <button type="submit">Sumar al Ranking</button>
+            </form>
+            <ul class="lista-items">
+                {% for rank in rankings %}
+                <li>{{ rank[1] }} ({{ rank[3] }} pts) <a href="/eliminar_ranking/{{ rank[0] }}" class="btn-borrar">X</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- MÓDULO TIENDA -->
+        <div class="formulario">
+            <h3 style="color: #000932;">Cargar Producto a Tienda</h3>
+            <form action="/admin" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="accion" value="nuevo_producto">
+                
+                <label>Sección:</label>
+                <select name="categoria" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                    <option value="Equipamiento de Padel">Equipamiento de Padel</option>
+                    <option value="Indumentaria">Indumentaria</option>
+                </select>
+
+                <label>Género (Solo para ropa):</label>
+                <select name="genero" style="width: 100%; padding: 10px; margin: 8px 0 15px;">
+                    <option value="No aplica">No aplica / Unisex</option>
+                    <option value="Caballeros">Caballeros</option>
+                    <option value="Damas">Damas</option>
+                </select>
+                
+                <label>Nombre (Ej: Paleta Bullpadel):</label>
+                <input type="text" name="producto" required>
+                
+                <label>Talle (Ej: M, 42, o Único):</label>
+                <input type="text" name="talle" required>
+
+                <label>Precio (Ej: $150.000):</label>
+                <input type="text" name="precio_prod" required>
+
+                <label>Foto del producto:</label>
+                <input type="file" name="imagen" accept="image/*" required style="border: none; padding: 0;">
+                
+                <button type="submit" style="margin-top: 10px;">Publicar Producto</button>
+            </form>
+            <ul class="lista-items">
+                {% for prod in tienda %}
+                <li>{{ prod[3] }} ({{ prod[4] }}) - {{ prod[5] }} <a href="/eliminar_producto/{{ prod[0] }}" class="btn-borrar">X</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- MÓDULO EQUIPOS (LIGAS) -->
+        <div class="formulario">
+            <h3 style="color: #93b625;">Cargar Pareja (Liga)</h3>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="accion" value="nuevo_equipo">
+                
+                <label>Rama y Categoría:</label>
+                <div style="display: flex; gap: 10px;">
+                    <select name="rama" style="width: 100%; padding: 10px; margin: 8px 0 15px;">
+                        <option value="Caballeros">Caballeros</option>
+                        <option value="Damas">Damas</option>
+                    </select>
+                    <select name="categoria" style="width: 100%; padding: 10px; margin: 8px 0 15px;">
+                        <option value="5ta">5ta</option>
+                        <option value="6ta">6ta</option>
+                        <option value="7ma">7ma</option>
+                    </select>
+                </div>
+
+                <label>Jugador 1:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" name="j1_nombre" placeholder="Nombre" required>
+                    <input type="text" name="j1_apellido" placeholder="Apellido" required>
+                </div>
+                
+                <label>Jugador 2:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" name="j2_nombre" placeholder="Nombre" required>
+                    <input type="text" name="j2_apellido" placeholder="Apellido" required>
+                </div>
+                
+                <button type="submit" style="background-color: #93b625; color: #000932;">Inscribir Pareja</button>
+            </form>
+            <ul class="lista-items">
+                {% for equipo in equipos %}
+                <li>{{ equipo[4]|upper }} / {{ equipo[6]|upper }}<br><small>({{ equipo[1] }} - {{ equipo[2] }})</small> <a href="/eliminar_equipo/{{ equipo[0] }}" class="btn-borrar">X</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- MÓDULO PARTIDOS / FIXTURE -->
+        <div class="formulario">
+            <h3 style="color: #93b625;">Cargar / Editar Partido</h3>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="accion" value="nuevo_partido">
+                
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>Rama:</label>
+                        <select name="rama" style="width: 100%; padding: 10px; margin: 8px 0 15px;">
+                            <option value="Caballeros">Caballeros</option>
+                            <option value="Damas">Damas</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Categoría:</label>
+                        <select name="categoria" style="width: 100%; padding: 10px; margin: 8px 0 15px;">
+                            <option value="5ta">5ta</option>
+                            <option value="6ta">6ta</option>
+                            <option value="7ma">7ma</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label>Fase (Ej: Fecha 1):</label>
+                <input type="text" name="fase" required>
+                
+                <label>Equipo 1:</label>
+                <select name="equipo1" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                    <option value="">-- Seleccionar Equipo 1 --</option>
+                    {% for equipo in equipos %}
+                    <option value="{{ equipo[0] }}">{{ equipo[4]|upper }} / {{ equipo[6]|upper }} ({{ equipo[1] }} {{ equipo[2] }})</option>
+                    {% endfor %}
+                </select>
+
+                <label>Equipo 2:</label>
+                <select name="equipo2" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                    <option value="">-- Seleccionar Equipo 2 --</option>
+                    {% for equipo in equipos %}
+                    <option value="{{ equipo[0] }}">{{ equipo[4]|upper }} / {{ equipo[6]|upper }} ({{ equipo[1] }} {{ equipo[2] }})</option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" style="background-color: #93b625; color: #000932;">Programar Partido</button>
+            </form>
+            <ul class="lista-items">
+                {% for partido in partidos %}
+                <li>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br>vs<br> {{ partido[6]|upper }} / {{ partido[7]|upper }}<br><small style="color: #666;">{{ partido[3] }} | {{ partido[8] }}</small> <a href="/eliminar_partido/{{ partido[0] }}" class="btn-borrar">X</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- MÓDULO CARGAR RESULTADOS Y PUNTOS -->
+        <div class="formulario">
+            <h3 style="color: #f8111c;">Cerrar Partido y Sumar Puntos</h3>
+            <form action="/actualizar_resultado" method="POST">
+                <label>Seleccionar Partido Pendiente:</label>
+                <select name="id_partido" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                    <option value="">-- Elegir partido --</option>
+                    {% for partido in partidos %}
+                        {% if partido[8] == 'Pendiente' %}
+                        <option value="{{ partido[0] }}">{{ partido[1] }} {{ partido[2] }} | {{ partido[4]|upper }} / {{ partido[5]|upper }} vs {{ partido[6]|upper }} / {{ partido[7]|upper }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+
+                <label>Resultado Final (Ej: 6-4 / 4-6 / 7-5):</label>
+                <input type="text" name="resultado_texto" required>
+
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label>¿Quién ganó?</label>
+                        <select name="ganador" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                            <option value="equipo1">Equipo 1 (Local)</option>
+                            <option value="equipo2">Equipo 2 (Visitante)</option>
+                            <option value="empate">Empate por suspensión</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>¿En cuántos sets?</label>
+                        <select name="cant_sets" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                            <option value="2">2 Sets</option>
+                            <option value="3">3 Sets</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" style="background-color: #f8111c; color: white;">Guardar Resultado</button>
+            </form>
+        </div>
+        <!-- MÓDULO GENERAR PLAYOFFS -->
+        <div class="formulario">
+            <h3 style="color: #003383;">Generar Semifinales (Top 4)</h3>
+            <p style="font-size: 13px; color: #555; margin-bottom: 15px; line-height: 1.4;">Lee la tabla y programa los cruces automáticamente (1º vs 4º y 2º vs 3º).</p>
+            <form action="/generar_semis" method="POST">
+                <div style="display: flex; gap: 10px;">
+                    <select name="rama" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                        <option value="Caballeros">Caballeros</option>
+                        <option value="Damas">Damas</option>
+                    </select>
+                    <select name="categoria" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                        <option value="5ta">5ta</option>
+                        <option value="6ta">6ta</option>
+                        <option value="7ma">7ma</option>
+                    </select>
+                </div>
+                <button type="submit" style="background-color: #003383; color: white;">Programar Cruces</button>
+            </form>
+        </div>
+
+</body>
+</html>
