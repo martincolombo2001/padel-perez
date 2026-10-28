@@ -1,9 +1,10 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 import psycopg2
 
 app = Flask(__name__)
+app.secret_key = 'padelperez2026'
 
 app.config['CARPETA_FOTOS'] = 'static/uploads'
 os.makedirs(app.config['CARPETA_FOTOS'], exist_ok=True)
@@ -126,8 +127,32 @@ def liga_damas():
     conexion.close()
     return render_template('liga_detalle.html', titulo="Liga Damas", equipos=equipos_guardados, partidos=partidos_guardados)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        usuario = request.form['usuario']
+        clave = request.form['clave']
+        
+        if usuario == 'tincho' and clave == 'padel2026':
+            session['admin_logueado'] = True
+            return redirect(url_for('panel_admin'))
+        else:
+            error = 'Credenciales incorrectas'
+            
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('admin_logueado', None)
+    return redirect(url_for('inicio'))
+
 @app.route('/admin', methods=['GET', 'POST'])
 def panel_admin():
+    # CANDADO: Si no inició sesión, lo manda al login
+    if not session.get('admin_logueado'):
+        return redirect(url_for('login'))
+        
     conexion = obtener_conexion()
     cursor = conexion.cursor()
 
