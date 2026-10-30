@@ -14,8 +14,9 @@
         button { width: 100%; padding: 12px; background-color: #000932; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #003383; }
         .lista-items { list-style: none; padding: 0; margin-top: 20px; }
-        .lista-items li { background: #f9f9f9; padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
+        .lista-items li { background: #f9f9f9; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         .btn-borrar { background-color: #dc3545; color: white; padding: 4px 8px; text-decoration: none; border-radius: 4px; font-size: 12px; }
+        .btn-editar { background-color: #ffc107; color: #000; padding: 4px 8px; text-decoration: none; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -42,10 +43,11 @@
             </form>
             <ul class="lista-items">
                 {% for sponsor in sponsors %}
-                <li>{{ sponsor[1] }} <a href="/eliminar_sponsor/{{ sponsor[0] }}" class="btn-borrar">X</a></li>
+                <li style="display: flex; justify-content: space-between; align-items: center;">{{ sponsor[1] }} <a href="/eliminar_sponsor/{{ sponsor[0] }}" class="btn-borrar">X</a></li>
                 {% endfor %}
             </ul>
         </div>
+
         <!-- MÓDULO TORNEOS -->
         <div class="formulario">
             <h3>Cargar Torneo</h3>
@@ -66,28 +68,7 @@
             </form>
             <ul class="lista-items">
                 {% for torneo in torneos %}
-                <li>{{ torneo[1] }} <a href="/eliminar/{{ torneo[0] }}" class="btn-borrar">X</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <!-- MÓDULO RANKINGS -->
-        <div class="formulario">
-            <h3>Cargar Jugador al Ranking</h3>
-            <form action="/admin" method="POST">
-                <input type="hidden" name="accion" value="nuevo_ranking">
-                
-                <label>Nombre del Jugador:</label>
-                <input type="text" name="jugador" required>
-                <label>Categoría (Ej: 6ta):</label>
-                <input type="text" name="categoria" required>
-                <label>Puntos Totales:</label>
-                <input type="number" name="puntos" required>
-                <button type="submit">Sumar al Ranking</button>
-            </form>
-            <ul class="lista-items">
-                {% for rank in rankings %}
-                <li>{{ rank[1] }} ({{ rank[3] }} pts) <a href="/eliminar_ranking/{{ rank[0] }}" class="btn-borrar">X</a></li>
+                <li style="display: flex; justify-content: space-between; align-items: center;">{{ torneo[1] }} <a href="/eliminar/{{ torneo[0] }}" class="btn-borrar">X</a></li>
                 {% endfor %}
             </ul>
         </div>
@@ -125,9 +106,40 @@
                 
                 <button type="submit" style="margin-top: 10px;">Publicar Producto</button>
             </form>
+            
             <ul class="lista-items">
                 {% for prod in tienda %}
-                <li>{{ prod[3] }} ({{ prod[4] }}) - {{ prod[5] }} <a href="/eliminar_producto/{{ prod[0] }}" class="btn-borrar">X</a></li>
+                <li style="display: flex; flex-direction: column; align-items: stretch;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                        <span>{{ prod[3] }} ({{ prod[4] }}) - {{ prod[5] }}</span>
+                        <div style="display: flex; align-items: center;">
+                            <button type="button" class="btn-editar" onclick="document.getElementById('edit-prod-{{ prod[0] }}').style.display='block'">Editar</button>
+                            <a href="/eliminar_producto/{{ prod[0] }}" class="btn-borrar">X</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Formulario oculto de edición -->
+                    <form id="edit-prod-{{ prod[0] }}" action="/editar_producto" method="POST" enctype="multipart/form-data" style="display: none; background: #eef2f5; padding: 15px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                        <input type="hidden" name="id_producto" value="{{ prod[0] }}">
+                        
+                        <label style="font-size: 12px;">Nombre:</label>
+                        <input type="text" name="producto" value="{{ prod[3] }}" required style="margin: 4px 0 10px; padding: 8px;">
+                        
+                        <label style="font-size: 12px;">Talle:</label>
+                        <input type="text" name="talle" value="{{ prod[4] }}" required style="margin: 4px 0 10px; padding: 8px;">
+                        
+                        <label style="font-size: 12px;">Precio:</label>
+                        <input type="text" name="precio_prod" value="{{ prod[5] }}" required style="margin: 4px 0 10px; padding: 8px;">
+                        
+                        <label style="font-size: 12px;">Cambiar Foto (dejar vacío si no cambia):</label>
+                        <input type="file" name="imagen" accept="image/*" style="margin: 4px 0 10px; padding: 0; border: none;">
+                        
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button type="submit" style="background-color: #93b625; color: #000932; padding: 10px;">Guardar</button>
+                            <button type="button" onclick="document.getElementById('edit-prod-{{ prod[0] }}').style.display='none'" style="background-color: #aaa; color: white; padding: 10px;">Cancelar</button>
+                        </div>
+                    </form>
+                </li>
                 {% endfor %}
             </ul>
         </div>
@@ -167,7 +179,10 @@
             </form>
             <ul class="lista-items">
                 {% for equipo in equipos %}
-                <li>{{ equipo[4]|upper }} / {{ equipo[6]|upper }}<br><small>({{ equipo[1] }} - {{ equipo[2] }})</small> <a href="/eliminar_equipo/{{ equipo[0] }}" class="btn-borrar">X</a></li>
+                <li style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ equipo[4]|upper }} / {{ equipo[6]|upper }}<br><small>({{ equipo[1] }} - {{ equipo[2] }})</small></span> 
+                    <a href="/eliminar_equipo/{{ equipo[0] }}" class="btn-borrar">X</a>
+                </li>
                 {% endfor %}
             </ul>
         </div>
@@ -219,7 +234,10 @@
             </form>
             <ul class="lista-items">
                 {% for partido in partidos %}
-                <li>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br>vs<br> {{ partido[6]|upper }} / {{ partido[7]|upper }}<br><small style="color: #666;">{{ partido[3] }} | {{ partido[8] }}</small> <a href="/eliminar_partido/{{ partido[0] }}" class="btn-borrar">X</a></li>
+                <li style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br>vs<br> {{ partido[6]|upper }} / {{ partido[7]|upper }}<br><small style="color: #666;">{{ partido[3] }} | {{ partido[8] }}</small></span>
+                    <a href="/eliminar_partido/{{ partido[0] }}" class="btn-borrar">X</a>
+                </li>
                 {% endfor %}
             </ul>
         </div>
@@ -261,6 +279,7 @@
                 <button type="submit" style="background-color: #f8111c; color: white;">Guardar Resultado</button>
             </form>
         </div>
+        
         <!-- MÓDULO GENERAR PLAYOFFS -->
         <div class="formulario">
             <h3 style="color: #003383;">Generar Semifinales (Top 4)</h3>
@@ -280,6 +299,7 @@
                 <button type="submit" style="background-color: #003383; color: white;">Programar Cruces</button>
             </form>
         </div>
+    </div>
 
 </body>
 </html>

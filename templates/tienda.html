@@ -12,11 +12,15 @@
         h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 30px; font-size: 28px; }
         .contenedor { max-width: 1000px; margin: 0 auto; }
 
-        .grilla-botones { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; justify-content: center; }
+        .grilla-botones { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; justify-content: center; }
         .tarjeta-opcion { flex: 1; min-width: 250px; max-width: 400px; background-color: #000932; color: white; text-align: center; padding: 25px 15px; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s; border: none; font-family: inherit;}
         .tarjeta-opcion:hover { transform: translateY(-5px); background-color: #001f5c; }
         .tarjeta-opcion h2 { margin: 0 0 10px 0; color: #93b625; font-size: 22px; text-transform: uppercase; }
         .tarjeta-opcion.activa { border: 3px solid #93b625; background-color: #001f5c; }
+
+        /* Estilos del selector de ordenamiento */
+        .controles-orden { text-align: center; margin-bottom: 30px; }
+        .select-orden { padding: 10px; border-radius: 8px; border: 1px solid #000932; font-size: 15px; color: #000932; font-weight: bold; background-color: white; cursor: pointer; outline: none; }
 
         .filtros-secundarios { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
         .btn-filtro { padding: 8px 16px; border: 1px solid #000932; background-color: transparent; color: #000932; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.2s; font-size: 14px;}
@@ -57,13 +61,24 @@
             </button>
         </div>
 
+        <div class="controles-orden">
+            <label for="ordenar" style="color: #000932; font-weight: bold; margin-right: 10px;">Ordenar por:</label>
+            <select id="ordenar" class="select-orden" onchange="ordenarProductos(this.value)">
+                <option value="defecto">Más recientes (Defecto)</option>
+                <option value="nombre_az">Nombre (A - Z)</option>
+                <option value="precio_menor">Precio (Menor a Mayor)</option>
+                <option value="precio_mayor">Precio (Mayor a Menor)</option>
+                <option value="talle">Talle</option>
+            </select>
+        </div>
+
         <!-- SECCIÓN: EQUIPAMIENTO -->
         <div id="equipamiento" class="seccion-tienda activa">
             <div class="grilla-productos">
                 {% set ns_eq = namespace(hay=false) %}
                 {% for prod in tienda %}
                     {% if prod[1] == 'Equipamiento de Padel' %}
-                    <div class="producto-card">
+                    <div class="producto-card" data-id="{{ prod[0] }}" data-nombre="{{ prod[3]|lower }}" data-precio="{{ prod[5] }}" data-talle="{{ prod[4]|lower }}">
                         <div class="producto-img-container">
                             <img src="{{ prod[6] }}" alt="{{ prod[3] }}">
                         </div>
@@ -96,7 +111,7 @@
                 {% set ns_ind = namespace(hay=false) %}
                 {% for prod in tienda %}
                     {% if prod[1] == 'Indumentaria' %}
-                    <div class="producto-card item-indumentaria" data-genero="{{ prod[2] }}">
+                    <div class="producto-card item-indumentaria" data-id="{{ prod[0] }}" data-genero="{{ prod[2] }}" data-nombre="{{ prod[3]|lower }}" data-precio="{{ prod[5] }}" data-talle="{{ prod[4]|lower }}">
                         <div class="producto-img-container">
                             <img src="{{ prod[6] }}" alt="{{ prod[3] }}">
                         </div>
@@ -130,6 +145,10 @@
             
             document.getElementById(seccionId).classList.add('activa');
             botonClickeado.classList.add('activa');
+            
+            // Restablecer el selector de orden al cambiar de sección
+            document.getElementById('ordenar').value = 'defecto';
+            ordenarProductos('defecto');
         }
 
         function filtrarIndumentaria(genero, botonClickeado) {
@@ -147,6 +166,33 @@
                 } else {
                     tarjeta.style.display = 'none';
                 }
+            });
+        }
+
+        function ordenarProductos(criterio) {
+            document.querySelectorAll('.grilla-productos').forEach(grilla => {
+                let tarjetas = Array.from(grilla.querySelectorAll('.producto-card'));
+                if (tarjetas.length === 0) return;
+
+                tarjetas.sort((a, b) => {
+                    if (criterio === 'nombre_az') {
+                        return a.dataset.nombre.localeCompare(b.dataset.nombre);
+                    } else if (criterio === 'precio_menor' || criterio === 'precio_mayor') {
+                        // Limpia caracteres como "$" o "." para convertir a número puro
+                        let precioA = parseInt(a.dataset.precio.replace(/[^0-9]/g, '')) || 0;
+                        let precioB = parseInt(b.dataset.precio.replace(/[^0-9]/g, '')) || 0;
+                        
+                        if (criterio === 'precio_menor') return precioA - precioB;
+                        return precioB - precioA;
+                    } else if (criterio === 'talle') {
+                        return a.dataset.talle.localeCompare(b.dataset.talle);
+                    } else {
+                        // Defecto (Más recientes primero, guiado por ID de carga)
+                        return parseInt(b.dataset.id) - parseInt(a.dataset.id);
+                    }
+                });
+
+                tarjetas.forEach(tarjeta => grilla.appendChild(tarjeta));
             });
         }
     </script>

@@ -313,6 +313,36 @@ def inicializar_base_datos():
     except Exception as e:
         print("Aviso de conexión a base de datos:", e)
 
+@app.route('/editar_producto', methods=['POST'])
+def editar_producto():
+    if not session.get('admin_logueado'):
+        return redirect(url_for('login'))
+        
+    id_producto = request.form.get('id_producto')
+    producto = request.form.get('producto')
+    talle = request.form.get('talle')
+    precio_prod = request.form.get('precio_prod')
+    foto = request.files.get('imagen')
+    
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
+    # Si subiste una foto nueva, la mandamos a Cloudinary y actualizamos todo
+    if foto and foto.filename != '':
+        import cloudinary.uploader
+        respuesta = cloudinary.uploader.upload(foto)
+        url_foto = respuesta.get('secure_url')
+        cursor.execute("UPDATE tienda SET producto = %s, talle = %s, precio = %s, imagen = %s WHERE id = %s",
+            (producto, talle, precio_prod, url_foto, id_producto))
+    else:
+        # Si no subiste foto, solo actualizamos los textos
+        cursor.execute("UPDATE tienda SET producto = %s, talle = %s, precio = %s WHERE id = %s",
+            (producto, talle, precio_prod, id_producto))
+        
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
 inicializar_base_datos()
 
 if __name__ == '__main__':
