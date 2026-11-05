@@ -17,6 +17,7 @@
         .lista-items li { background: #f9f9f9; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         .btn-borrar { background-color: #dc3545; color: white; padding: 4px 8px; text-decoration: none; border-radius: 4px; font-size: 12px; }
         .btn-editar { background-color: #ffc107; color: #000; padding: 4px 8px; text-decoration: none; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 5px; font-weight: bold; }
+        .nota-roja { color: #f8111c; font-size: 11px; display: block; font-weight: normal; margin-top: -3px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -32,13 +33,10 @@
             <h3 style="color: #000932;">Cargar Sponsor</h3>
             <form action="/admin" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="accion" value="nuevo_sponsor">
-                
                 <label>Nombre de la Empresa:</label>
                 <input type="text" name="nombre" required>
-                
                 <label>Logo del Sponsor:</label>
                 <input type="file" name="imagen" accept="image/*" required style="border: none; padding: 0;">
-                
                 <button type="submit" style="margin-top: 10px;">Publicar Sponsor</button>
             </form>
             <ul class="lista-items">
@@ -53,7 +51,6 @@
             <h3>Cargar Torneo</h3>
             <form action="/admin" method="POST">
                 <input type="hidden" name="accion" value="nuevo_torneo">
-                
                 <label>Nombre:</label>
                 <input type="text" name="nombre" required>
                 <label>Categorías:</label>
@@ -75,38 +72,30 @@
 
         <!-- MÓDULO TIENDA -->
         <div class="formulario">
-            <h3 style="color: #000932;">Cargar Producto a Tienda</h3>
+            <h3 style="color: #000932;">Cargar Producto</h3>
             <form action="/admin" method="POST" enctype="multipart/form-data">
                 <input type="hidden" name="accion" value="nuevo_producto">
-                
                 <label>Sección:</label>
                 <select name="categoria" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
                     <option value="Equipamiento de Padel">Equipamiento de Padel</option>
                     <option value="Indumentaria">Indumentaria</option>
                 </select>
-
                 <label>Género (Solo para ropa):</label>
                 <select name="genero" style="width: 100%; padding: 10px; margin: 8px 0 15px;">
                     <option value="No aplica">No aplica / Unisex</option>
                     <option value="Caballeros">Caballeros</option>
                     <option value="Damas">Damas</option>
                 </select>
-                
-                <label>Nombre (Ej: Paleta Bullpadel):</label>
+                <label>Nombre:</label>
                 <input type="text" name="producto" required>
-                
-                <label>Talle (Ej: M, 42, o Único):</label>
+                <label>Talle:</label>
                 <input type="text" name="talle" required>
-
-                <label>Precio (Ej: $150.000):</label>
+                <label>Precio:</label>
                 <input type="text" name="precio_prod" required>
-
-                <label>Foto del producto:</label>
+                <label>Foto:</label>
                 <input type="file" name="imagen" accept="image/*" required style="border: none; padding: 0;">
-                
                 <button type="submit" style="margin-top: 10px;">Publicar Producto</button>
             </form>
-            
             <ul class="lista-items">
                 {% for prod in tienda %}
                 <li style="display: flex; flex-direction: column; align-items: stretch;">
@@ -117,23 +106,16 @@
                             <a href="/eliminar_producto/{{ prod[0] }}" class="btn-borrar">X</a>
                         </div>
                     </div>
-                    
-                    <!-- Formulario oculto de edición -->
                     <form id="edit-prod-{{ prod[0] }}" action="/editar_producto" method="POST" enctype="multipart/form-data" style="display: none; background: #eef2f5; padding: 15px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc;">
                         <input type="hidden" name="id_producto" value="{{ prod[0] }}">
-                        
                         <label style="font-size: 12px;">Nombre:</label>
                         <input type="text" name="producto" value="{{ prod[3] }}" required style="margin: 4px 0 10px; padding: 8px;">
-                        
                         <label style="font-size: 12px;">Talle:</label>
                         <input type="text" name="talle" value="{{ prod[4] }}" required style="margin: 4px 0 10px; padding: 8px;">
-                        
                         <label style="font-size: 12px;">Precio:</label>
                         <input type="text" name="precio_prod" value="{{ prod[5] }}" required style="margin: 4px 0 10px; padding: 8px;">
-                        
-                        <label style="font-size: 12px;">Cambiar Foto (dejar vacío si no cambia):</label>
+                        <label style="font-size: 12px;">Cambiar Foto:</label>
                         <input type="file" name="imagen" accept="image/*" style="margin: 4px 0 10px; padding: 0; border: none;">
-                        
                         <div style="display: flex; gap: 10px; margin-top: 10px;">
                             <button type="submit" style="background-color: #93b625; color: #000932; padding: 10px;">Guardar</button>
                             <button type="button" onclick="document.getElementById('edit-prod-{{ prod[0] }}').style.display='none'" style="background-color: #aaa; color: white; padding: 10px;">Cancelar</button>
@@ -161,16 +143,20 @@
                         <option value="5ta">5ta</option>
                         <option value="6ta">6ta</option>
                         <option value="7ma">7ma</option>
+                        <option value="Suma 12">Suma 12</option>
+                        <option value="Suma 13">Suma 13</option>
                     </select>
                 </div>
 
-                <label>Jugador 1 (Caballero si es Mixto):</label>
+                <label>Jugador 1:</label>
+                <span class="nota-roja">Si es Mixta: CABALLERO. Ej apellido: Colombo (5ta)</span>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" name="j1_nombre" placeholder="Nombre" required>
                     <input type="text" name="j1_apellido" placeholder="Apellido" required>
                 </div>
                 
-                <label>Jugador 2 (Dama si es Mixto):</label>
+                <label>Jugador 2:</label>
+                <span class="nota-roja">Si es Mixta: DAMA. Ej apellido: García (7ma)</span>
                 <div style="display: flex; gap: 10px;">
                     <input type="text" name="j2_nombre" placeholder="Nombre" required>
                     <input type="text" name="j2_apellido" placeholder="Apellido" required>
@@ -209,6 +195,8 @@
                             <option value="5ta">5ta</option>
                             <option value="6ta">6ta</option>
                             <option value="7ma">7ma</option>
+                            <option value="Suma 12">Suma 12</option>
+                            <option value="Suma 13">Suma 13</option>
                         </select>
                     </div>
                 </div>
@@ -257,10 +245,8 @@
                         {% endif %}
                     {% endfor %}
                 </select>
-
                 <label>Resultado Final (Ej: 6-4 / 4-6 / 7-5):</label>
                 <input type="text" name="resultado_texto" required>
-
                 <div style="display: flex; gap: 10px;">
                     <div style="flex: 1;">
                         <label>¿Quién ganó?</label>
@@ -271,10 +257,10 @@
                         </select>
                     </div>
                     <div style="flex: 1;">
-                        <label>Forma de victoria</label>
+                        <label>Forma de victoria:</label>
                         <select name="cant_sets" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
-                            <option value="2">WalkOver</option>
-                            <option value="3">Partido Ganado</option>
+                            <option value="3">Partido ganado</option>
+                            <option value="2">Walk over</option>
                         </select>
                     </div>
                 </div>
@@ -297,12 +283,13 @@
                         <option value="5ta">5ta</option>
                         <option value="6ta">6ta</option>
                         <option value="7ma">7ma</option>
+                        <option value="Suma 12">Suma 12</option>
+                        <option value="Suma 13">Suma 13</option>
                     </select>
                 </div>
                 <button type="submit" style="background-color: #003383; color: white;">Programar Cruces</button>
             </form>
         </div>
     </div>
-
 </body>
 </html>

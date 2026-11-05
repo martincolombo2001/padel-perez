@@ -83,7 +83,13 @@
         <a href="/ligas" class="btn-volver">← Volver a Ligas</a>
         <h1>{{ titulo }}</h1>
 
-        {% set categorias = ['5ta', '6ta', '7ma'] %}
+        <!-- Extraemos dinámicamente las categorías de los equipos anotados -->
+        {% set categorias = equipos | map(attribute=0) | unique | list %}
+        
+        {% if not categorias %}
+            <p style="text-align: center; color: #666; margin-top: 50px;">Aún no hay categorías cargadas en esta liga.</p>
+        {% endif %}
+        
         {% for cat in categorias %}
         
             <!-- BOTÓN DESPLEGABLE -->

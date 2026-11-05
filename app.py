@@ -32,45 +32,70 @@ def inicio():
     conexion.close()
     return render_template('index.html', torneos=torneos_guardados, sponsors=sponsors_guardados)
 
+import re
+
 @app.route('/ligas')
 def pagina_ligas():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
-    # Ranking Caballeros: Suma puntos de liga Caballeros (ambos) + puntos de liga Mixta (solo Jugador 1)
+    # 1. Ranking Caballeros (Liga Caballeros completa + Jugador 1 de Mixta)
     cursor.execute("""
-        SELECT nombre, apellido, SUM(puntos) as total_puntos, categoria
-        FROM (
-            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Caballeros'
-            UNION ALL
-            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Caballeros'
-            UNION ALL
-            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Mixta'
-        ) as jugadores
-        WHERE nombre != ''
-        GROUP BY nombre, apellido, categoria
-        ORDER BY categoria, total_puntos DESC
+        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Caballeros'
+        UNION ALL
+        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Caballeros'
+        UNION ALL
+        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Mixta'
     """)
-    ranking_caballeros = cursor.fetchall()
+    datos_cab = cursor.fetchall()
     
-    # Ranking Damas: Suma puntos de liga Damas (ambas) + puntos de liga Mixta (solo Jugador 2)
+    ranking_c = {}
+    for nombre, apellido, puntos, categoria, rama in datos_cab:
+        if not nombre: continue
+        cat_real = categoria
+        ap_limpio = apellido
+        # Si es mixta y tiene paréntesis, extraemos la categoría real y limpiamos el apellido
+        if rama == 'Mixta' and '(' in apellido and ')' in apellido:
+            match = re.search(r'\((.*?)\)', apellido)
+            if match:
+                cat_real = match.group(1).strip()
+                ap_limpio = re.sub(r'\s*\(.*?\)\s*', '', apellido).strip()
+        
+        clave = (nombre, ap_limpio, cat_real)
+        ranking_c[clave] = ranking_c.get(clave, 0) + puntos
+        
+    ranking_caballeros = [ (k[0], k[1], v, k[2]) for k, v in ranking_c.items() ]
+    ranking_caballeros.sort(key=lambda x: (x[3], -x[2]))
+
+    # 2. Ranking Damas (Liga Damas completa + Jugador 2 de Mixta)
     cursor.execute("""
-        SELECT nombre, apellido, SUM(puntos) as total_puntos, categoria
-        FROM (
-            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Damas'
-            UNION ALL
-            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Damas'
-            UNION ALL
-            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Mixta'
-        ) as jugadores
-        WHERE nombre != ''
-        GROUP BY nombre, apellido, categoria
-        ORDER BY categoria, total_puntos DESC
+        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Damas'
+        UNION ALL
+        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Damas'
+        UNION ALL
+        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Mixta'
     """)
-    ranking_damas = cursor.fetchall()
+    datos_dam = cursor.fetchall()
+    
+    ranking_d = {}
+    for nombre, apellido, puntos, categoria, rama in datos_dam:
+        if not nombre: continue
+        cat_real = categoria
+        ap_limpio = apellido
+        if rama == 'Mixta' and '(' in apellido and ')' in apellido:
+            match = re.search(r'\((.*?)\)', apellido)
+            if match:
+                cat_real = match.group(1).strip()
+                ap_limpio = re.sub(r'\s*\(.*?\)\s*', '', apellido).strip()
+                
+        clave = (nombre, ap_limpio, cat_real)
+        ranking_d[clave] = ranking_d.get(clave, 0) + puntos
+        
+    ranking_damas = [ (k[0], k[1], v, k[2]) for k, v in ranking_d.items() ]
+    ranking_damas.sort(key=lambda x: (x[3], -x[2]))
+
     conexion.close()
     return render_template('ligas.html', ranking_cab=ranking_caballeros, ranking_dam=ranking_damas)
-
 @app.route('/mixta')
 def liga_mixta():
     conexion = obtener_conexion()
