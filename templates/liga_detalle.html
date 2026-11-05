@@ -12,7 +12,7 @@
         h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 10px; font-size: 28px; }
         .contenedor { max-width: 800px; margin: 0 auto; }
         
-        /* BOTÓN ACORDEÓN (Basado en tu titulo-categoria) */
+        /* BOTÓN ACORDEÓN */
         .titulo-categoria { 
             background-color: #000932; 
             color: #93b625; 
@@ -50,6 +50,11 @@
         td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 15px; }
         tr:nth-child(even) { background-color: #fafafa; }
         .txt-centro { text-align: center; }
+        
+        /* CLASIFICADOS A PLAYOFFS (TOP 4) */
+        .zona-clasificacion, tr:nth-child(even).zona-clasificacion { 
+            background-color: #eef7d4 !important; 
+        }
 
         /* Tarjetas de partidos (Fase Grupos) */
         .partido { border-left: 4px solid #000932; background: #fdfdfd; padding: 15px; margin-bottom: 15px; border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
@@ -57,6 +62,9 @@
         .badge-fase { color: #666; font-size: 13px; font-weight: bold; background: #eee; padding: 3px 8px; border-radius: 4px;}
         .partido-equipos { color: #000932; font-size: 16px; margin-bottom: 8px; line-height: 1.4; }
         .partido-resultado { color: #f8111c; font-weight: bold; font-size: 14px; margin-top: 10px; }
+
+        /* Filtro de fechas */
+        .select-fase { padding: 6px 12px; border-radius: 6px; border: 1px solid #ccc; font-weight: bold; color: #000932; outline: none; cursor: pointer; background: white; font-family: inherit;}
 
         /* Estilos Cuadro Final (Bracket) */
         .bracket-scroll { overflow-x: auto; padding: 10px 0; }
@@ -94,10 +102,10 @@
                                 <th class="txt-centro">Pts</th>
                                 <th class="txt-centro">PJ</th>
                             </tr>
-                            {% set ns = namespace(hay_equipos=false) %}
+                            {% set ns = namespace(hay_equipos=false, pos=1) %}
                             {% for equipo in equipos %}
                                 {% if equipo[0] == cat %}
-                                <tr>
+                                <tr class="{% if ns.pos <= 4 %}zona-clasificacion{% endif %}">
                                     <td>
                                         {{ equipo[1] }} <strong>{{ equipo[2]|upper }}</strong><br>
                                         {{ equipo[3] }} <strong>{{ equipo[4]|upper }}</strong>
@@ -106,6 +114,7 @@
                                     <td class="txt-centro">{{ equipo[6] }}</td>
                                 </tr>
                                 {% set ns.hay_equipos = true %}
+                                {% set ns.pos = ns.pos + 1 %}
                                 {% endif %}
                             {% endfor %}
                             
@@ -113,6 +122,11 @@
                             <tr><td colspan="3" class="txt-centro" style="padding: 20px; color:#999;">Sin parejas inscriptas.</td></tr>
                             {% endif %}
                         </table>
+                        {% if ns.hay_equipos %}
+                        <div style="margin-top: 15px; font-size: 12px; color: #666;">
+                            <span style="display: inline-block; width: 12px; height: 12px; background-color: #eef7d4; border: 1px solid #ccc; border-radius: 2px; margin-right: 5px; vertical-align: middle;"></span> Clasifican a Playoffs
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -180,30 +194,40 @@
                 {% endif %}
 
                 <!-- CAJA 3: Fixture Regular (Fase de Grupos) -->
-                <div class="caja">
-                    <h3>Fixture General</h3>
-                    {% set ns_fixture = namespace(hay_partidos=false) %}
-                    {% for partido in partidos %}
-                        {% if partido[0] == cat %}
-                        <div class="partido">
-                            <div class="partido-header">
-                                <span class="badge-fase">{{ partido[1] }}</span>
-                            </div>
-                            <div class="partido-equipos">
-                                {{ partido[2] }} <strong>{{ partido[3]|upper }}</strong> / {{ partido[4] }} <strong>{{ partido[5]|upper }}</strong>
-                                <br><span style="color:#999; font-size:12px;">vs</span><br>
-                                {{ partido[6] }} <strong>{{ partido[7]|upper }}</strong> / {{ partido[8] }} <strong>{{ partido[9]|upper }}</strong>
-                            </div>
-                            <div class="partido-resultado">
-                                Resultado: {{ partido[10] }}
-                            </div>
-                        </div>
-                        {% set ns_fixture.hay_partidos = true %}
-                        {% endif %}
-                    {% endfor %}
+                <div class="caja caja-fixture">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f6f8; margin-bottom: 15px; padding-bottom: 10px;">
+                        <h3 style="margin: 0; border: none; padding: 0;">Fixture General</h3>
+                        <select class="select-fase" onchange="filtrarFechas(this.value, this.closest('.caja-fixture'))">
+                            <option value="Todas">Todas las fechas</option>
+                        </select>
+                    </div>
 
+                    <div class="contenedor-partidos">
+                        {% set ns_fixture = namespace(hay_partidos=false) %}
+                        {% for partido in partidos %}
+                            {% if partido[0] == cat %}
+                            <div class="partido" data-fase="{{ partido[1] }}">
+                                <div class="partido-header">
+                                    <span class="badge-fase">{{ partido[1] }}</span>
+                                </div>
+                                <div class="partido-equipos">
+                                    {{ partido[2] }} <strong>{{ partido[3]|upper }}</strong> / {{ partido[4] }} <strong>{{ partido[5]|upper }}</strong>
+                                    <br><span style="color:#999; font-size:12px;">vs</span><br>
+                                    {{ partido[6] }} <strong>{{ partido[7]|upper }}</strong> / {{ partido[8] }} <strong>{{ partido[9]|upper }}</strong>
+                                </div>
+                                <div class="partido-resultado">
+                                    Resultado: {{ partido[10] }}
+                                </div>
+                            </div>
+                            {% set ns_fixture.hay_partidos = true %}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    <p class="msj-vacio" style="text-align: center; color: #999; padding: 10px 0; display: none;">No hay partidos para la fecha seleccionada.</p>
+                    
                     {% if not ns_fixture.hay_partidos %}
-                    <p style="text-align: center; color: #999; padding: 10px 0;">No hay partidos programados.</p>
+                    <p style="text-align: center; color: #999; padding: 10px 0;">No hay partidos programados en esta categoría.</p>
                     {% endif %}
                 </div>
 
@@ -213,8 +237,9 @@
 
     </div>
 
-    <!-- SCRIPT PARA EL ACORDEÓN -->
+    <!-- SCRIPT PARA EL ACORDEÓN Y LOS FILTROS -->
     <script>
+        // 1. Lógica del Acordeón
         var acordeones = document.getElementsByClassName("acordeon");
         for (var i = 0; i < acordeones.length; i++) {
             acordeones[i].addEventListener("click", function() {
@@ -234,6 +259,58 @@
                     panel.style.display = "block";
                 }
             });
+        }
+
+        // 2. Lógica del Menú de Fechas
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('.caja-fixture').forEach(caja => {
+                let select = caja.querySelector('.select-fase');
+                let partidos = caja.querySelectorAll('.partido');
+                let fases = new Set();
+                
+                // Recolectar las fechas únicas ignorando las semifinales y finales para el filtro
+                partidos.forEach(p => {
+                    let nombreFase = p.getAttribute('data-fase');
+                    if (!nombreFase.includes('Semifinal') && !nombreFase.includes('Final')) {
+                        fases.add(nombreFase);
+                    }
+                });
+                
+                // Si hay partidos, armar las opciones. Si no, ocultar el menú desplegable.
+                if (fases.size > 0) {
+                    Array.from(fases).forEach(fase => {
+                        let opt = document.createElement('option');
+                        opt.value = fase;
+                        opt.textContent = fase;
+                        select.appendChild(opt);
+                    });
+                } else {
+                    select.style.display = 'none';
+                }
+            });
+        });
+
+        function filtrarFechas(faseSeleccionada, caja) {
+            let partidos = caja.querySelectorAll('.partido');
+            let msjVacio = caja.querySelector('.msj-vacio');
+            let visibles = 0;
+            
+            partidos.forEach(p => {
+                let fasePartido = p.getAttribute('data-fase');
+                
+                // Mostrar si elegís "Todas" o si coincide exacto con la fecha
+                if (faseSeleccionada === 'Todas' || fasePartido === faseSeleccionada) {
+                    p.style.display = 'block';
+                    visibles++;
+                } else {
+                    p.style.display = 'none';
+                }
+            });
+            
+            // Mostrar mensaje si filtramos y no queda ninguno en pantalla
+            if (msjVacio) {
+                msjVacio.style.display = (visibles === 0) ? 'block' : 'none';
+            }
         }
     </script>
 </body>
