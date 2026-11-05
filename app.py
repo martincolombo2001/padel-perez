@@ -36,32 +36,60 @@ def inicio():
 def pagina_ligas():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
+    
+    # Ranking Caballeros: Suma puntos de liga Caballeros (ambos) + puntos de liga Mixta (solo Jugador 1)
     cursor.execute("""
         SELECT nombre, apellido, SUM(puntos) as total_puntos, categoria
         FROM (
-            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, rama, categoria FROM equipos_liga
+            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Caballeros'
             UNION ALL
-            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, rama, categoria FROM equipos_liga
+            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Caballeros'
+            UNION ALL
+            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Mixta'
         ) as jugadores
-        WHERE rama = 'Caballeros' AND nombre != ''
+        WHERE nombre != ''
         GROUP BY nombre, apellido, categoria
         ORDER BY categoria, total_puntos DESC
     """)
     ranking_caballeros = cursor.fetchall()
+    
+    # Ranking Damas: Suma puntos de liga Damas (ambas) + puntos de liga Mixta (solo Jugador 2)
     cursor.execute("""
         SELECT nombre, apellido, SUM(puntos) as total_puntos, categoria
         FROM (
-            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, rama, categoria FROM equipos_liga
+            SELECT j1_nombre as nombre, j1_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Damas'
             UNION ALL
-            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, rama, categoria FROM equipos_liga
+            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Damas'
+            UNION ALL
+            SELECT j2_nombre as nombre, j2_apellido as apellido, puntos, categoria FROM equipos_liga WHERE rama = 'Mixta'
         ) as jugadores
-        WHERE rama = 'Damas' AND nombre != ''
+        WHERE nombre != ''
         GROUP BY nombre, apellido, categoria
         ORDER BY categoria, total_puntos DESC
     """)
     ranking_damas = cursor.fetchall()
     conexion.close()
     return render_template('ligas.html', ranking_cab=ranking_caballeros, ranking_dam=ranking_damas)
+
+@app.route('/mixta')
+def liga_mixta():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT categoria, j1_nombre, j1_apellido, j2_nombre, j2_apellido, puntos, pj FROM equipos_liga WHERE rama = 'Mixta' ORDER BY categoria, puntos DESC")
+    equipos_guardados = cursor.fetchall()
+    cursor.execute("""
+        SELECT p.categoria, p.fase, 
+               e1.j1_nombre, e1.j1_apellido, e1.j2_nombre, e1.j2_apellido,
+               e2.j1_nombre, e2.j1_apellido, e2.j2_nombre, e2.j2_apellido,
+               p.resultado 
+        FROM partidos_liga p
+        JOIN equipos_liga e1 ON p.equipo1_id = e1.id
+        JOIN equipos_liga e2 ON p.equipo2_id = e2.id
+        WHERE p.rama = 'Mixta' ORDER BY p.id DESC
+    """)
+    partidos_guardados = cursor.fetchall()
+    conexion.close()
+    return render_template('liga_detalle.html', titulo="Liga Mixta", equipos=equipos_guardados, partidos=partidos_guardados)
 
 @app.route('/tienda')
 def pagina_tienda():

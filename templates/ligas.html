@@ -13,8 +13,8 @@
         .contenedor { max-width: 800px; margin: 0 auto; }
         
         /* Botonera principal */
-        .grilla-botones { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; }
-        .tarjeta-opcion { flex: 1; min-width: 200px; background-color: #000932; color: white; text-align: center; padding: 25px 15px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .grilla-botones { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 40px; justify-content: center; }
+        .tarjeta-opcion { flex: 1; min-width: 180px; background-color: #000932; color: white; text-align: center; padding: 25px 15px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.2s; }
         .tarjeta-opcion:hover { transform: translateY(-5px); background-color: #001f5c; }
         .tarjeta-opcion h2 { margin: 0 0 10px 0; color: #93b625; font-size: 22px; text-transform: uppercase; }
         .tarjeta-opcion p { margin: 0; font-size: 14px; color: #ddd; }
@@ -50,12 +50,17 @@
                 <h2>Damas</h2>
                 <p>Ver posiciones y fixtures</p>
             </a>
+            <a href="/mixta" class="tarjeta-opcion">
+                <h2>Mixta</h2>
+                <p>Ver posiciones y fixtures</p>
+            </a>
             <a href="/reglamento" class="tarjeta-opcion" style="background-color: #555;">
                 <h2 style="color: white;">Reglamento</h2>
                 <p>Normas oficiales</p>
             </a>
         </div>
-<!-- RANKING ANUAL CABALLEROS -->
+
+        <!-- RANKING ANUAL CABALLEROS -->
         <div class="caja-ranking">
             <h2 style="color: #000932; text-align: center; border-bottom: 2px solid #000932; padding-bottom: 15px;">TOP 10 ANUAL - CABALLEROS</h2>
             
