@@ -113,8 +113,8 @@
                                 {% if equipo[0] == cat %}
                                 <tr class="{% if ns.pos <= 4 %}zona-clasificacion{% endif %}">
                                     <td>
-                                        {{ equipo[1] }} <strong>{{ equipo[2]|upper }}</strong><br>
-                                        {{ equipo[3] }} <strong>{{ equipo[4]|upper }}</strong>
+                                        {{ equipo[1] }} <strong>{{ equipo[2].split('(')[0] | trim | upper }}</strong><br>
+                                        {{ equipo[3] }} <strong>{{ equipo[4].split('(')[0] | trim | upper }}</strong>
                                     </td>
                                     <td class="txt-centro" style="font-size: 18px;"><strong>{{ equipo[5] }}</strong></td>
                                     <td class="txt-centro">{{ equipo[6] }}</td>
@@ -159,8 +159,8 @@
                                 <div class="bracket-match">
                                     <span class="bracket-fase-etiqueta">SEMIFINAL 1</span>
                                     {% if ns_play.semi1 %}
-                                        <div class="bracket-equipo"><strong>{{ ns_play.semi1[3]|upper }}</strong> / <strong>{{ ns_play.semi1[5]|upper }}</strong></div>
-                                        <div class="bracket-equipo"><strong>{{ ns_play.semi1[7]|upper }}</strong> / <strong>{{ ns_play.semi1[9]|upper }}</strong></div>
+                                        <div class="bracket-equipo"><strong>{{ ns_play.semi1[3].split('(')[0] | trim | upper }}</strong> / <strong>{{ ns_play.semi1[5].split('(')[0] | trim | upper }}</strong></div>
+                                        <div class="bracket-equipo"><strong>{{ ns_play.semi1[7].split('(')[0] | trim | upper }}</strong> / <strong>{{ ns_play.semi1[9].split('(')[0] | trim | upper }}</strong></div>
                                         <div class="bracket-res">{{ ns_play.semi1[10] }}</div>
                                     {% else %}
                                         <div style="color:#999; font-size:12px; text-align:center; padding:10px;">A definir</div>
@@ -171,8 +171,8 @@
                                 <div class="bracket-match">
                                     <span class="bracket-fase-etiqueta">SEMIFINAL 2</span>
                                     {% if ns_play.semi2 %}
-                                        <div class="bracket-equipo"><strong>{{ ns_play.semi2[3]|upper }}</strong> / <strong>{{ ns_play.semi2[5]|upper }}</strong></div>
-                                        <div class="bracket-equipo"><strong>{{ ns_play.semi2[7]|upper }}</strong> / <strong>{{ ns_play.semi2[9]|upper }}</strong></div>
+                                        <div class="bracket-equipo"><strong>{{ ns_play.semi2[3].split('(')[0] | trim | upper }}</strong> / <strong>{{ ns_play.semi2[5].split('(')[0] | trim | upper }}</strong></div>
+                                        <div class="bracket-equipo"><strong>{{ ns_play.semi2[7].split('(')[0] | trim | upper }}</strong> / <strong>{{ ns_play.semi2[9].split('(')[0] | trim | upper }}</strong></div>
                                         <div class="bracket-res">{{ ns_play.semi2[10] }}</div>
                                     {% else %}
                                         <div style="color:#999; font-size:12px; text-align:center; padding:10px;">A definir</div>
@@ -185,8 +185,8 @@
                                 <div class="bracket-match final-match">
                                     <span class="bracket-fase-etiqueta" style="background: #93b625; color: #000932;">GRAN FINAL</span>
                                     {% if ns_play.final %}
-                                        <div class="bracket-equipo"><strong>{{ ns_play.final[3]|upper }}</strong> / <strong>{{ ns_play.final[5]|upper }}</strong></div>
-                                        <div class="bracket-equipo"><strong>{{ ns_play.final[7]|upper }}</strong> / <strong>{{ ns_play.final[9]|upper }}</strong></div>
+                                        <div class="bracket-equipo"><strong>{{ ns_play.final[3].split('(')[0] | trim | upper }}</strong> / <strong>{{ ns_play.final[5].split('(')[0] | trim | upper }}</strong></div>
+                                        <div class="bracket-equipo"><strong>{{ ns_play.final[7].split('(')[0] | trim | upper }}</strong> / <strong>{{ ns_play.final[9].split('(')[0] | trim | upper }}</strong></div>
                                         <div class="bracket-res">{{ ns_play.final[10] }}</div>
                                     {% else %}
                                         <div style="color:#999; font-size:12px; text-align:center; padding:10px;">Esperando ganadores...</div>
@@ -199,61 +199,63 @@
                 </div>
                 {% endif %}
 
-                <!-- CAJA 3: Fixture Regular (Fase de Grupos) -->
+                <!-- CAJA 3: Fixture General -->
                 <div class="caja caja-fixture">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f6f8; margin-bottom: 15px; padding-bottom: 10px;">
-                        <h3 style="margin: 0; border: none; padding: 0;">Fixture General</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f5f6f8; padding-bottom: 10px; margin-bottom: 15px;">
+                        <h3 style="border: none; padding: 0; margin: 0;">Fixture General</h3>
                         <select class="select-fase" onchange="filtrarFechas(this.value, this.closest('.caja-fixture'))">
                             <option value="Todas">Todas las fechas</option>
                         </select>
                     </div>
 
-                 <div class="contenedor-partidos">
-        {% set ns_fixture = namespace(hay_partidos=false) %}
-        {% for partido in partidos %}
-            {% if partido[0] == cat %}
-                
-                {% if partido[10] == 'Fecha Libre' %}
-                <!-- Diseño especial para Fecha Libre -->
-                <div class="partido" data-fase="{{ partido[1] }}" style="border-left-color: #93b625; background-color: #fbfdf5;">
-                    <div class="partido-header">
-                        <span class="badge-fase">{{ partido[1] }}</span>
-                        <span style="color: #93b625; font-size: 12px; font-weight: bold; padding-top: 3px;">⭐ LIBRE ⭐</span>
+                    <div class="contenedor-partidos">
+                        {% set ns_fixture = namespace(hay_partidos=false) %}
+                        {% for partido in partidos %}
+                            {% if partido[0] == cat %}
+                                
+                                {% if partido[10] == 'Fecha Libre' %}
+                                <!-- Diseño especial para Fecha Libre -->
+                                <div class="partido" data-fase="{{ partido[1] }}" style="border-left-color: #93b625; background-color: #fbfdf5;">
+                                    <div class="partido-header">
+                                        <span class="badge-fase">{{ partido[1] }}</span>
+                                        <span style="color: #93b625; font-size: 12px; font-weight: bold; padding-top: 3px;">⭐ LIBRE ⭐</span>
+                                    </div>
+                                    <div class="partido-equipos" style="text-align: center; margin-top: 5px; color: #555;">
+                                        La pareja de <br>
+                                        <strong style="color: #000932; font-size: 17px;">{{ partido[3].split('(')[0] | trim | upper }} / {{ partido[5].split('(')[0] | trim | upper }}</strong> <br>
+                                        descansa esta fecha.
+                                    </div>
+                                </div>
+                                {% else %}
+                                <!-- Diseño normal para partidos -->
+                                <div class="partido" data-fase="{{ partido[1] }}">
+                                    <div class="partido-header">
+                                        <span class="badge-fase">{{ partido[1] }}</span>
+                                    </div>
+                                    <div class="partido-equipos">
+                                        {{ partido[2] }} <strong>{{ partido[3].split('(')[0] | trim | upper }}</strong> / {{ partido[4] }} <strong>{{ partido[5].split('(')[0] | trim | upper }}</strong>
+                                        <br><span style="color:#999; font-size:12px;">vs</span><br>
+                                        {{ partido[6] }} <strong>{{ partido[7].split('(')[0] | trim | upper }}</strong> / {{ partido[8] }} <strong>{{ partido[9].split('(')[0] | trim | upper }}</strong>
+                                    </div>
+                                    <div class="partido-resultado">
+                                        Resultado: {{ partido[10] }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% set ns_fixture.hay_partidos = true %}
+                            {% endif %}
+                        {% endfor %}
                     </div>
-                    <div class="partido-equipos" style="text-align: center; margin-top: 5px; color: #555;">
-                        La pareja de <br>
-                        <strong style="color: #000932; font-size: 17px;">{{ partido[3]|upper }} / {{ partido[5]|upper }}</strong> <br>
-                        descansa esta fecha.
-                    </div>
-                </div>
-                {% else %}
-                <!-- Diseño normal para partidos -->
-                <div class="partido" data-fase="{{ partido[1] }}">
-                    <div class="partido-header">
-                        <span class="badge-fase">{{ partido[1] }}</span>
-                    </div>
-                    <div class="partido-equipos">
-                        {{ partido[2] }} <strong>{{ partido[3]|upper }}</strong> / {{ partido[4] }} <strong>{{ partido[5]|upper }}</strong>
-                        <br><span style="color:#999; font-size:12px;">vs</span><br>
-                        {{ partido[6] }} <strong>{{ partido[7]|upper }}</strong> / {{ partido[8] }} <strong>{{ partido[9]|upper }}</strong>
-                    </div>
-                    <div class="partido-resultado">
-                        Resultado: {{ partido[10] }}
-                    </div>
-                </div>
-                {% endif %}
-                
-                {% set ns_fixture.hay_partidos = true %}
-            {% endif %}
-        {% endfor %}
-    </div>
 
-    <p class="msj-vacio" style="text-align: center; color: #999; padding: 10px 0; display: none;">No hay partidos para la fecha seleccionada.</p>
-    
-    {% if not ns_fixture.hay_partidos %}
-    <p style="text-align: center; color: #999; padding: 10px 0;">No hay partidos programados en esta categoría.</p>
-    {% endif %}
+                    <p class="msj-vacio" style="text-align: center; color: #999; padding: 10px 0; display: none;">No hay partidos para la fecha seleccionada.</p>
+                    
+                    {% if not ns_fixture.hay_partidos %}
+                    <p style="text-align: center; color: #999; padding: 10px 0;">No hay partidos programados en esta categoría.</p>
+                    {% endif %}
+                </div> <!-- Cierre caja fixture -->
 
+            </div> <!-- Cierre panel -->
         {% endfor %}
 
     </div>
