@@ -223,9 +223,22 @@ def panel_admin():
                 (request.form.get('rama', ''), request.form.get('categoria', ''), request.form.get('j1_nombre', ''), request.form.get('j1_apellido', ''), request.form.get('j2_nombre', ''), request.form.get('j2_apellido', '')))
         
         elif accion == 'nuevo_partido':
-            cursor.execute("INSERT INTO partidos_liga (rama, categoria, fase, equipo1_id, equipo2_id) VALUES (%s, %s, %s, %s, %s)",
-                (request.form.get('rama', ''), request.form.get('categoria', ''), request.form.get('fase', ''), request.form.get('equipo1', ''), request.form.get('equipo2', '')))
-
+            rama = request.form.get('rama', '')
+            categoria = request.form.get('categoria', '')
+            fase = request.form.get('fase', '')
+            equipo1 = request.form.get('equipo1', '')
+            equipo2 = request.form.get('equipo2', '')
+            
+            # TRUCO: Si el equipo 2 es "0" (Fecha Libre)
+            if equipo2 == "0":
+                equipo2 = equipo1  # Guardamos el mismo ID para no romper el JOIN
+                resultado_estado = "Fecha Libre"
+            else:
+                resultado_estado = "Pendiente"
+                
+            cursor.execute("INSERT INTO partidos_liga (rama, categoria, fase, equipo1_id, equipo2_id, resultado) VALUES (%s, %s, %s, %s, %s, %s)",
+                (rama, categoria, fase, equipo1, equipo2, resultado_estado))
+            
         elif accion == 'nuevo_sponsor':
             nombre = request.form.get('nombre', '')
             foto = request.files.get('imagen')

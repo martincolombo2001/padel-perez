@@ -213,6 +213,7 @@
                 <label>Equipo 2:</label>
                 <select name="equipo2" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
                     <option value="">-- Seleccionar Equipo 2 --</option>
+                    <option value="0" style="color: #93b625; font-weight: bold;">⭐ ASIGNAR FECHA LIBRE ⭐</option>
                     {% for equipo in equipos %}
                     <option value="{{ equipo[0] }}">{{ equipo[4]|upper }} / {{ equipo[6]|upper }} ({{ equipo[1] }} {{ equipo[2] }})</option>
                     {% endfor %}
@@ -220,10 +221,15 @@
                 
                 <button type="submit" style="background-color: #93b625; color: #000932;">Programar Partido</button>
             </form>
+            
             <ul class="lista-items">
                 {% for partido in partidos %}
                 <li style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br>vs<br> {{ partido[6]|upper }} / {{ partido[7]|upper }}<br><small style="color: #666;">{{ partido[3] }} | {{ partido[8] }}</small></span>
+                    {% if partido[8] == 'Fecha Libre' %}
+                        <span>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br><span style="color: #93b625; font-weight: bold;">⭐ FECHA LIBRE ⭐</span><br><small style="color: #666;">{{ partido[3] }} | Fase: {{ partido[8] }}</small></span>
+                    {% else %}
+                        <span>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br>vs<br> {{ partido[6]|upper }} / {{ partido[7]|upper }}<br><small style="color: #666;">{{ partido[3] }} | {{ partido[8] }}</small></span>
+                    {% endif %}
                     <a href="/eliminar_partido/{{ partido[0] }}" class="btn-borrar">X</a>
                 </li>
                 {% endfor %}
