@@ -267,42 +267,52 @@
                 this.classList.toggle("activo");
                 
                 var icono = this.querySelector('.icono');
-                if (this.classList.contains("activo")) {
-                    icono.textContent = "-";
-                } else {
-                    icono.textContent = "+";
-                }
+                icono.textContent = this.classList.contains("activo") ? "-" : "+";
                 
                 var panel = this.nextElementSibling;
-                if (panel.style.display === "block") {
-                    panel.style.display = "none";
-                } else {
-                    panel.style.display = "block";
-                }
+                panel.style.display = (panel.style.display === "block") ? "none" : "block";
             });
         }
 
-        // 2. Lógica del Menú de Fechas
+        // Función inteligente para eliminar espacios extra y tildes
+        function limpiarTexto(texto) {
+            if (!texto) return "";
+            return texto.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // 2. Lógica del Menú de Fechas (Con limpiador total y ordenador)
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll('.caja-fixture').forEach(caja => {
                 let select = caja.querySelector('.select-fase');
                 let partidos = caja.querySelectorAll('.partido');
                 let fases = new Set();
                 
-                // Recolectar las fechas únicas ignorando las semifinales y finales para el filtro
                 partidos.forEach(p => {
-                    let nombreFase = p.getAttribute('data-fase');
-                    if (!nombreFase.includes('Semifinal') && !nombreFase.includes('Final')) {
+                    // Limpiamos la fecha apenas la leemos de la base de datos
+                    let nombreFase = limpiarTexto(p.getAttribute('data-fase'));
+                    
+                    // Guardamos la versión limpia oculta en la tarjeta para el filtro
+                    p.setAttribute('data-fase-limpio', nombreFase);
+                    
+                    // Excluimos las semis y finales del menú normal
+                    if (!nombreFase.toLowerCase().includes('semifinal') && !nombreFase.toLowerCase().includes('final')) {
                         fases.add(nombreFase);
                     }
                 });
                 
-                // Si hay partidos, armar las opciones. Si no, ocultar el menú desplegable.
-                if (fases.size > 0) {
-                    Array.from(fases).forEach(fase => {
+                // Ordenar las fechas numéricamente (Fecha 1, Fecha 2...)
+                let fasesArray = Array.from(fases).sort((a, b) => {
+                    let numA = parseInt(a.replace(/\D/g, '')) || 0;
+                    let numB = parseInt(b.replace(/\D/g, '')) || 0;
+                    return numA - numB;
+                });
+                
+                // Armar las opciones unificadas
+                if (fasesArray.length > 0) {
+                    fasesArray.forEach(fase => {
                         let opt = document.createElement('option');
                         opt.value = fase;
-                        opt.textContent = fase;
+                        opt.textContent = fase; // Se muestra perfectamente limpio en pantalla
                         select.appendChild(opt);
                     });
                 } else {
@@ -316,11 +326,14 @@
             let msjVacio = caja.querySelector('.msj-vacio');
             let visibles = 0;
             
+            // Limpiamos lo que el usuario eligió en el menú por las dudas
+            let faseElegidaLimpia = limpiarTexto(faseSeleccionada);
+            
             partidos.forEach(p => {
-                let fasePartido = p.getAttribute('data-fase');
+                let fasePartido = p.getAttribute('data-fase-limpio');
                 
-                // Mostrar si elegís "Todas" o si coincide exacto con la fecha
-                if (faseSeleccionada === 'Todas' || fasePartido === faseSeleccionada) {
+                // Comparación exacta e infalible
+                if (faseSeleccionada === 'Todas' || fasePartido === faseElegidaLimpia) {
                     p.style.display = 'block';
                     visibles++;
                 } else {
@@ -328,7 +341,6 @@
                 }
             });
             
-            // Mostrar mensaje si filtramos y no queda ninguno en pantalla
             if (msjVacio) {
                 msjVacio.style.display = (visibles === 0) ? 'block' : 'none';
             }
