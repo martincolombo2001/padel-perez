@@ -25,7 +25,8 @@ def obtener_conexion():
 def inicio():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    cursor.execute("SELECT nombre, categorias, fecha, precio, premios FROM torneos ORDER BY id DESC")
+    # Modificamos acá para que SOLO muestre los activos o los recién creados
+    cursor.execute("SELECT nombre, categorias, fecha, precio, premios FROM torneos WHERE estado = 'Activo' OR estado IS NULL ORDER BY id DESC")
     torneos_guardados = cursor.fetchall()
     cursor.execute("SELECT id, nombre, imagen FROM sponsors ORDER BY id ASC")
     sponsors_guardados = cursor.fetchall()
@@ -33,6 +34,16 @@ def inicio():
     return render_template('index.html', torneos=torneos_guardados, sponsors=sponsors_guardados)
 
 import re
+
+@app.route('/salon_fama')
+def salon_fama():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    # Buscamos solo los torneos finalizados
+    cursor.execute("SELECT nombre, categorias, fecha, campeones, subcampeones FROM torneos WHERE estado = 'Finalizado' ORDER BY id DESC")
+    torneos_finalizados = cursor.fetchall()
+    conexion.close()
+    return render_template('salon_fama.html', torneos=torneos_finalizados)
 
 @app.route('/ligas')
 def pagina_ligas():

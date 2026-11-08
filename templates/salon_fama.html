@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salón de la Fama - Padel Pérez</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f5f6f8; margin: 0; padding: 20px; }
+        .btn-volver { display: inline-block; margin-bottom: 20px; color: #000932; text-decoration: none; font-weight: bold; border: 1px solid #000932; padding: 8px 16px; border-radius: 4px; transition: background 0.3s;}
+        .btn-volver:hover { background-color: #000932; color: white; }
+        h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 10px; font-size: 28px; }
+        .contenedor { max-width: 800px; margin: 0 auto; }
+        
+        .torneo-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #93b625; text-align: center; }
+        .torneo-titulo { color: #000932; font-size: 22px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
+        .torneo-fecha { color: #666; font-size: 14px; margin-bottom: 15px; }
+        
+        .podio { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
+        .campeones { background-color: #fbfdf5; border: 2px solid #eef7d4; padding: 15px; border-radius: 8px; flex: 1; min-width: 200px; }
+        .subcampeones { background-color: #f8f9fa; border: 2px solid #eee; padding: 15px; border-radius: 8px; flex: 1; min-width: 200px; }
+        .trofeo { font-size: 24px; display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="contenedor">
+        <a href="/" class="btn-volver">← Volver al Inicio</a>
+        <h1>Salón de la Fama 🏆</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">El historial incondicional de los campeones de nuestro club.</p>
+
+        {% if torneos %}
+            {% for torneo in torneos %}
+            <div class="torneo-card">
+                <div class="torneo-titulo">{{ torneo[0] }}</div>
+                <div class="torneo-fecha">{{ torneo[2] }} | Categorías: {{ torneo[1] }}</div>
+                
+                <div class="podio">
+                    <div class="campeones">
+                        <span class="trofeo">🏆</span>
+                        <strong style="color: #93b625; font-size: 14px;">CAMPEONES</strong><br>
+                        <span style="font-size: 18px; color: #000932; font-weight: bold;">{{ torneo[3]|upper }}</span>
+                    </div>
+                    <div class="subcampeones">
+                        <span class="trofeo">🥈</span>
+                        <strong style="color: #666; font-size: 14px;">SUBCAMPEONES</strong><br>
+                        <span style="font-size: 18px; color: #333; font-weight: bold;">{{ torneo[4]|upper }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: #999; padding: 20px;">Aún no hay torneos finalizados registrados.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
