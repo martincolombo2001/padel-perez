@@ -21,22 +21,6 @@ def obtener_conexion():
     else:
         return psycopg2.connect(dbname="padel_db", user="postgres", password="Luciano7#", host="localhost", port="5432")
 
-@app.route('/actualizar_torneos')
-def actualizar_torneos():
-    conexion = obtener_conexion()
-    cursor = conexion.cursor()
-    
-    try:
-        cursor.execute("ALTER TABLE torneos ADD COLUMN estado VARCHAR(20) DEFAULT 'Activo'")
-        cursor.execute("ALTER TABLE torneos ADD COLUMN campeones VARCHAR(100) DEFAULT ''")
-        cursor.execute("ALTER TABLE torneos ADD COLUMN subcampeones VARCHAR(100) DEFAULT ''")
-        conexion.commit()
-        conexion.close()
-        return "¡Base de datos actualizada correctamente! Ya podes borrar esta ruta de tu app.py."
-    except Exception as e:
-        conexion.close()
-        return f"Aviso (quizás las columnas ya existían): {e}"
-    
 @app.route('/')
 def inicio():
     conexion = obtener_conexion()
@@ -266,10 +250,33 @@ def panel_admin():
                 
             cursor.execute("INSERT INTO sponsors (nombre, imagen) VALUES (%s, %s)", (nombre, url_foto))
 
+       elif accion == 'finalizar_torneo':
+            id_torneo = request.form.get('id_torneo')
+            campeones = request.form.get('campeones', '')
+            subcampeones = request.form.get('subcampeones', '')
+            
+            # Capturamos los puntos y los equipos elegidos en el panel
+            pts_campeones = request.form.get('pts_campeones', 0)
+            pts_subcampeones = request.form.get('pts_subcampeones', 0)
+            equipo_campeon = request.form.get('equipo_campeon', '')
+            equipo_subcampeon = request.form.get('equipo_subcampeon', '')
+            
+            # 1. Guardamos los ganadores y pasamos el torneo al historial
+            cursor.execute("UPDATE torneos SET estado = 'Finalizado', campeones = %s, subcampeones = %s WHERE id = %s",
+                           (campeones, subcampeones, id_torneo))
+            
+            # 2. Inyectamos los puntos a la pareja campeona (si elegiste una)
+            if equipo_campeon != "":
+                cursor.execute("UPDATE equipos_liga SET puntos = puntos + %s WHERE id = %s", (pts_campeones, equipo_campeon))
+                
+            # 3. Inyectamos los puntos a la pareja subcampeona (si elegiste una)
+            if equipo_subcampeon != "":
+                cursor.execute("UPDATE equipos_liga SET puntos = puntos + %s WHERE id = %s", (pts_subcampeones, equipo_subcampeon))
+            
         conexion.commit()
         return redirect(url_for('panel_admin'))
 
-    cursor.execute("SELECT id, nombre, fecha FROM torneos ORDER BY id DESC")
+    cursor.execute("SELECT id, nombre, fecha, estado, campeones, subcampeones FROM torneos ORDER BY id DESC")
     torneos_guardados = cursor.fetchall()
     cursor.execute("SELECT id, categoria, genero, producto, talle, precio, imagen FROM tienda ORDER BY id DESC")
     tienda_guardada = cursor.fetchall()
