@@ -250,7 +250,7 @@ def panel_admin():
                 
             cursor.execute("INSERT INTO sponsors (nombre, imagen) VALUES (%s, %s)", (nombre, url_foto))
 
-       elif accion == 'finalizar_torneo':
+        elif accion == 'finalizar_torneo':
             id_torneo = request.form.get('id_torneo')
             campeones = request.form.get('campeones', '')
             subcampeones = request.form.get('subcampeones', '')
