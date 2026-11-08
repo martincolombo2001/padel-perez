@@ -21,6 +21,22 @@ def obtener_conexion():
     else:
         return psycopg2.connect(dbname="padel_db", user="postgres", password="Luciano7#", host="localhost", port="5432")
 
+@app.route('/actualizar_torneos')
+def actualizar_torneos():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
+    try:
+        cursor.execute("ALTER TABLE torneos ADD COLUMN estado VARCHAR(20) DEFAULT 'Activo'")
+        cursor.execute("ALTER TABLE torneos ADD COLUMN campeones VARCHAR(100) DEFAULT ''")
+        cursor.execute("ALTER TABLE torneos ADD COLUMN subcampeones VARCHAR(100) DEFAULT ''")
+        conexion.commit()
+        conexion.close()
+        return "¡Base de datos actualizada correctamente! Ya podes borrar esta ruta de tu app.py."
+    except Exception as e:
+        conexion.close()
+        return f"Aviso (quizás las columnas ya existían): {e}"
+    
 @app.route('/')
 def inicio():
     conexion = obtener_conexion()
