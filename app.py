@@ -1,4 +1,5 @@
 import os
+import re
 from flask import Flask, render_template, request, redirect, url_for, session
 from werkzeug.utils import secure_filename
 import psycopg2
@@ -25,7 +26,6 @@ def obtener_conexion():
 def inicio():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    # Modificamos acá para que SOLO muestre los activos o los recién creados
     cursor.execute("SELECT nombre, categorias, fecha, precio, premios FROM torneos WHERE estado = 'Activo' OR estado IS NULL ORDER BY id DESC")
     torneos_guardados = cursor.fetchall()
     cursor.execute("SELECT id, nombre, imagen FROM sponsors ORDER BY id ASC")
@@ -33,13 +33,10 @@ def inicio():
     conexion.close()
     return render_template('index.html', torneos=torneos_guardados, sponsors=sponsors_guardados)
 
-import re
-
 @app.route('/salon_fama')
 def salon_fama():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
-    # Buscamos solo los torneos finalizados
     cursor.execute("SELECT nombre, categorias, fecha, campeones, subcampeones FROM torneos WHERE estado = 'Finalizado' ORDER BY id DESC")
     torneos_finalizados = cursor.fetchall()
     conexion.close()
@@ -47,10 +44,71 @@ def salon_fama():
 
 @app.route('/ligas')
 def pagina_ligas():
+    # LIGAS lee de los torneos en curso (equipos_liga)
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
-    # El cerebro ahora lee ÚNICAMENTE de tu Libro Mayor (tabla rankings)
+    # 1. Ranking Caballeros
+    cursor.execute("""
+        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Caballeros'
+        UNION ALL
+        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Caballeros'
+        UNION ALL
+        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Mixta'
+    """)
+    datos_cab = cursor.fetchall()
+    
+    ranking_c = {}
+    for nombre, apellido, puntos, categoria, rama in datos_cab:
+        if not nombre: continue
+        cat_real = categoria
+        ap_limpio = apellido
+        if rama == 'Mixta' and '(' in apellido and ')' in apellido:
+            match = re.search(r'\((.*?)\)', apellido)
+            if match:
+                cat_real = match.group(1).strip()
+                ap_limpio = re.sub(r'\s*\(.*?\)\s*', '', apellido).strip()
+        clave = (nombre, ap_limpio, cat_real)
+        ranking_c[clave] = ranking_c.get(clave, 0) + puntos
+        
+    ranking_caballeros = [ (k[0], k[1], v, k[2]) for k, v in ranking_c.items() ]
+    ranking_caballeros.sort(key=lambda x: (x[3], -x[2]))
+
+    # 2. Ranking Damas
+    cursor.execute("""
+        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Damas'
+        UNION ALL
+        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Damas'
+        UNION ALL
+        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Mixta'
+    """)
+    datos_dam = cursor.fetchall()
+    
+    ranking_d = {}
+    for nombre, apellido, puntos, categoria, rama in datos_dam:
+        if not nombre: continue
+        cat_real = categoria
+        ap_limpio = apellido
+        if rama == 'Mixta' and '(' in apellido and ')' in apellido:
+            match = re.search(r'\((.*?)\)', apellido)
+            if match:
+                cat_real = match.group(1).strip()
+                ap_limpio = re.sub(r'\s*\(.*?\)\s*', '', apellido).strip()
+        clave = (nombre, ap_limpio, cat_real)
+        ranking_d[clave] = ranking_d.get(clave, 0) + puntos
+        
+    ranking_damas = [ (k[0], k[1], v, k[2]) for k, v in ranking_d.items() ]
+    ranking_damas.sort(key=lambda x: (x[3], -x[2]))
+
+    conexion.close()
+    return render_template('ligas.html', ranking_cab=ranking_caballeros, ranking_dam=ranking_damas)
+
+@app.route('/rankings')
+def pagina_rankings():
+    # RANKINGS lee EXCLUSIVAMENTE del Libro Mayor Histórico (rankings)
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    
     cursor.execute("SELECT nombre, apellido, categoria, puntos, rama FROM rankings")
     datos_ranking = cursor.fetchall()
     
@@ -59,21 +117,15 @@ def pagina_ligas():
     
     for nombre, apellido, categoria, puntos, rama in datos_ranking:
         if not nombre: continue
-        
-        # Limpiamos los textos por si se escapó algún espacio al tipear
         nom_limpio = nombre.strip()
         ap_limpio = apellido.strip()
         cat = categoria.strip()
-        
         clave = (nom_limpio, ap_limpio, cat)
-        
-        # Agrupamos los puntos matemáticamente según la rama elegida
         if rama == 'Caballeros':
             ranking_c[clave] = ranking_c.get(clave, 0) + puntos
         elif rama == 'Damas':
             ranking_d[clave] = ranking_d.get(clave, 0) + puntos
 
-    # Armamos la lista y ordenamos: primero por categoría, luego por puntos de mayor a menor
     ranking_caballeros = [ (k[0], k[1], v, k[2]) for k, v in ranking_c.items() ]
     ranking_caballeros.sort(key=lambda x: (x[3], -x[2]))
 
@@ -81,9 +133,8 @@ def pagina_ligas():
     ranking_damas.sort(key=lambda x: (x[3], -x[2]))
     
     conexion.close()
-    
-    # Le mandamos los datos al HTML en el formato exacto que ya conoce
-    return render_template('ligas.html', ranking_cab=ranking_caballeros, ranking_dam=ranking_damas)
+    return render_template('rankings.html', ranking_cab=ranking_caballeros, ranking_dam=ranking_damas)
+
 @app.route('/mixta')
 def liga_mixta():
     conexion = obtener_conexion()
@@ -198,7 +249,7 @@ def panel_admin():
             precio_prod = request.form.get('precio_prod', '')
             foto = request.files.get('imagen')
             
-            url_foto = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg' # Imagen por defecto
+            url_foto = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg'
             if foto and foto.filename != '':
                 respuesta = cloudinary.uploader.upload(foto)
                 url_foto = respuesta.get('secure_url')
@@ -217,9 +268,8 @@ def panel_admin():
             equipo1 = request.form.get('equipo1', '')
             equipo2 = request.form.get('equipo2', '')
             
-            # TRUCO: Si el equipo 2 es "0" (Fecha Libre)
             if equipo2 == "0":
-                equipo2 = equipo1  # Guardamos el mismo ID para no romper el JOIN
+                equipo2 = equipo1
                 resultado_estado = "Fecha Libre"
             else:
                 resultado_estado = "Pendiente"
@@ -231,7 +281,7 @@ def panel_admin():
             nombre = request.form.get('nombre', '')
             foto = request.files.get('imagen')
             
-            url_foto = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg' # Imagen por defecto
+            url_foto = 'https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg'
             if foto and foto.filename != '':
                 respuesta = cloudinary.uploader.upload(foto)
                 url_foto = respuesta.get('secure_url')
@@ -243,21 +293,17 @@ def panel_admin():
             campeones = request.form.get('campeones', '')
             subcampeones = request.form.get('subcampeones', '')
             
-            # Capturamos los puntos y los equipos elegidos en el panel
             pts_campeones = request.form.get('pts_campeones', 0)
             pts_subcampeones = request.form.get('pts_subcampeones', 0)
             equipo_campeon = request.form.get('equipo_campeon', '')
             equipo_subcampeon = request.form.get('equipo_subcampeon', '')
             
-            # 1. Guardamos los ganadores y pasamos el torneo al historial
             cursor.execute("UPDATE torneos SET estado = 'Finalizado', campeones = %s, subcampeones = %s WHERE id = %s",
                            (campeones, subcampeones, id_torneo))
             
-            # 2. Inyectamos los puntos a la pareja campeona (si elegiste una)
             if equipo_campeon != "":
                 cursor.execute("UPDATE equipos_liga SET puntos = puntos + %s WHERE id = %s", (pts_campeones, equipo_campeon))
                 
-            # 3. Inyectamos los puntos a la pareja subcampeona (si elegiste una)
             if equipo_subcampeon != "":
                 cursor.execute("UPDATE equipos_liga SET puntos = puntos + %s WHERE id = %s", (pts_subcampeones, equipo_subcampeon))
 
@@ -298,10 +344,8 @@ def panel_admin():
     rankings_guardados = cursor.fetchall()
 
     conexion.close()
-    # ACORDATE de agregar rankings=rankings_guardados en este return:
     return render_template('admin.html', torneos=torneos_guardados, tienda=tienda_guardada, equipos=equipos_guardados, partidos=partidos_guardados, sponsors=sponsors_guardados, rankings=rankings_guardados)
    
-
 @app.route('/actualizar_resultado', methods=['POST'])
 def actualizar_resultado():
     id_partido = request.form.get('id_partido')
@@ -404,8 +448,8 @@ def inicializar_base_datos():
     try:
         conexion = obtener_conexion()
         cursor = conexion.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS torneos (id SERIAL PRIMARY KEY, nombre VARCHAR(100), categorias VARCHAR(100), fecha VARCHAR(100), precio VARCHAR(100), premios VARCHAR(100))''')
-        cursor.execute('''CREATE TABLE IF NOT EXISTS rankings (id SERIAL PRIMARY KEY, jugador VARCHAR(100), categoria VARCHAR(50), puntos INTEGER)''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS torneos (id SERIAL PRIMARY KEY, nombre VARCHAR(100), categorias VARCHAR(100), fecha VARCHAR(100), precio VARCHAR(100), premios VARCHAR(100), estado VARCHAR(20) DEFAULT 'Activo', campeones VARCHAR(100) DEFAULT '', subcampeones VARCHAR(100) DEFAULT '')''')
+        cursor.execute('''CREATE TABLE IF NOT EXISTS rankings (id SERIAL PRIMARY KEY, nombre VARCHAR(50), apellido VARCHAR(50), rama VARCHAR(50), categoria VARCHAR(50), puntos INTEGER, motivo VARCHAR(150), fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS tienda (id SERIAL PRIMARY KEY, categoria VARCHAR(50), genero VARCHAR(50), producto VARCHAR(100), talle VARCHAR(50), precio VARCHAR(50), imagen VARCHAR(255))''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS equipos_liga (id SERIAL PRIMARY KEY, rama VARCHAR(50), categoria VARCHAR(50), j1_nombre VARCHAR(50), j1_apellido VARCHAR(50), j2_nombre VARCHAR(50), j2_apellido VARCHAR(50), puntos INTEGER DEFAULT 0, pj INTEGER DEFAULT 0)''')
         cursor.execute('''CREATE TABLE IF NOT EXISTS partidos_liga (id SERIAL PRIMARY KEY, rama VARCHAR(50), categoria VARCHAR(50), fase VARCHAR(50), equipo1_id INTEGER REFERENCES equipos_liga(id) ON DELETE CASCADE, equipo2_id INTEGER REFERENCES equipos_liga(id) ON DELETE CASCADE, resultado VARCHAR(100) DEFAULT 'Pendiente')''')
@@ -429,7 +473,6 @@ def editar_producto():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
-    # Si subiste una foto nueva, la mandamos a Cloudinary y actualizamos todo
     if foto and foto.filename != '':
         import cloudinary.uploader
         respuesta = cloudinary.uploader.upload(foto)
@@ -437,7 +480,6 @@ def editar_producto():
         cursor.execute("UPDATE tienda SET producto = %s, talle = %s, precio = %s, imagen = %s WHERE id = %s",
             (producto, talle, precio_prod, url_foto, id_producto))
     else:
-        # Si no subiste foto, solo actualizamos los textos
         cursor.execute("UPDATE tienda SET producto = %s, talle = %s, precio = %s WHERE id = %s",
             (producto, talle, precio_prod, id_producto))
         

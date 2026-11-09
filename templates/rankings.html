@@ -2,53 +2,143 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Rankings - Padel Pérez</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Anual - Padel Pérez</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f5f6f8; margin: 0; padding: 40px; text-align: center; }
-        .btn-volver { display: inline-block; margin-bottom: 30px; color: #000932; text-decoration: none; font-weight: bold; border: 1px solid #000932; padding: 8px 16px; border-radius: 4px; }
+        body { font-family: Arial, sans-serif; background-color: #eef2f5; margin: 0; padding: 20px; }
+        .contenedor { max-width: 900px; margin: auto; }
+        .btn-volver { display: inline-block; margin-bottom: 20px; color: #000932; text-decoration: none; font-weight: bold; border: 1px solid #000932; padding: 8px 16px; border-radius: 4px; transition: background 0.3s;}
+        .btn-volver:hover { background-color: #000932; color: white; }
         
-        /* Esta es la caja azul que pediste */
-        .caja-azul { 
-            background-color: #000932; 
-            color: white; 
-            padding: 30px; 
-            border-radius: 12px; 
-            max-width: 500px; 
-            margin: 0 auto; 
-            box-shadow: 0 6px 15px rgba(0,0,0,0.2); 
-        }
+        /* Caja de Reglamento de Puntos */
+        .caja-puntos { background: #000932; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .caja-puntos h3 { margin-top: 0; color: #93b625; font-size: 20px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; text-transform: uppercase; }
+        .grilla-puntos { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .item-puntos { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 6px; font-size: 14px; line-height: 1.6; }
+        .item-puntos strong { color: #93b625; display: block; margin-bottom: 5px; font-size: 15px; text-transform: uppercase; }
         
-        .lista-rankings { list-style: none; padding: 0; margin: 0; }
-        .lista-rankings li { 
-            padding: 15px; 
-            border-bottom: 1px solid rgba(255,255,255,0.2); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            font-size: 18px;
-        }
-        /* Le sacamos el borde al último para que quede más prolijo */
-        .lista-rankings li:last-child { border-bottom: none; }
-        .puntos { font-weight: bold; color: #25D366; font-size: 22px; }
+        /* Acordeones Desplegables */
+        details { background: white; margin-bottom: 10px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        summary { background: #fff; padding: 15px 20px; font-size: 18px; font-weight: bold; color: #000932; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #93b625; }
+        summary::-webkit-details-marker { display: none; }
+        summary::after { content: '▼ Top 10'; font-size: 12px; color: #93b625; text-transform: uppercase; }
+        details[open] summary::after { content: '▲ Ocultar'; }
+        details[open] summary { border-bottom: 1px solid #eee; }
+        
+        /* Tablas internas */
+        .tabla-ranking { width: 100%; border-collapse: collapse; }
+        .tabla-ranking th { background-color: #f8f9fa; color: #666; padding: 10px 20px; text-align: left; font-size: 13px; text-transform: uppercase; border-bottom: 2px solid #eee; }
+        .tabla-ranking td { padding: 12px 20px; border-bottom: 1px solid #eee; color: #333; }
+        .tabla-ranking tr:hover { background-color: #fbfdf5; }
+        
+        .puesto { font-weight: bold; color: #93b625; font-size: 18px; width: 40px; text-align: center; }
+        .pts { font-weight: bold; color: #000932; text-align: right; font-size: 16px; }
+        .titulo-rama { color: #000932; border-bottom: 3px solid #93b625; padding-bottom: 10px; margin-top: 40px; text-transform: uppercase; }
     </style>
 </head>
 <body>
-    <a href="/" class="btn-volver">← Volver al Inicio</a>
-    
-    <h1 style="color: #000932;">Ranking Oficial</h1>
-    <p style="color: #666; margin-bottom: 40px;">Los mejores jugadores de Padel Pérez.</p>
+    <div class="contenedor">
+        <a href="/" class="btn-volver">← Volver al Inicio</a>
+        <h1 style="color: #000932; text-transform: uppercase; text-align: center; margin-bottom: 30px;">Ranking Anual Oficial</h1>
+        
+        <!-- REGLAMENTO DE PUNTUACIÓN (Actualizado) -->
+        <div class="caja-puntos">
+            <h3>Sistema de Puntuación:</h3>
+            <div class="grilla-puntos">
+                <div class="item-puntos">
+                    <strong>🏆 Torneos Largo</strong>
+                    Por Participar: 30 PTS<br>
+                    Por pasar a 8vos: 50 PTS<br>
+                    Por pasar a 4tos: 60 PTS<br>
+                    Por pasar a Semis: 70 PTS<br>
+                    Por llegar a la Final: 80 PTS<br>
+                    Por salir Campeón: 100 PTS
+                </div>
+                <div class="item-puntos">
+                    <strong>⚡ Torneo Americano</strong>
+                    Por Participar: 5 PTS<br>
+                    Semifinalistas: 20 PTS<br>
+                    Por salir 2do: 30 PTS<br>
+                    Por salir 1ro: 40 PTS
+                </div>
+                <div class="item-puntos">
+                    <strong>🔥 Liga</strong>
+                    Participación: 40 PTS<br>
+                    Semifinalistas: 80 PTS<br>
+                    Subcampeón: 100 PTS<br>
+                    Campeón: 120 PTS
+                </div>
+            </div>
+        </div>
 
-    <div class="caja-azul">
-        <ul class="lista-rankings">
-            {% for rank in rankings %}
-            <li>
-                <span><strong>#</strong> {{ rank[0] }} ({{ rank[1] }})</span>
-                <span class="puntos">{{ rank[2] }} pts</span>
-            </li>
-            {% else %}
-            <p style="text-align: center;">Todavía no hay jugadores clasificados.</p>
-            {% endfor %}
-        </ul>
+        {% set categorias = ['5ta', '6ta', '7ma', 'Suma 12/13'] %}
+
+        <!-- RAMA CABALLEROS -->
+        <h2 class="titulo-rama">Rama Caballeros</h2>
+        {% for cat in categorias %}
+            <details>
+                <summary>Caballeros - {{ cat }}</summary>
+                <table class="tabla-ranking">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center;">#</th>
+                            <th>Jugador</th>
+                            <th style="text-align: right;">Puntos Totales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set ns = namespace(puesto=1) %}
+                        {% for jugador in ranking_cab %}
+                            {% if jugador[3] == cat and ns.puesto <= 10 %}
+                            <tr>
+                                <td class="puesto">{{ ns.puesto }}</td>
+                                <td><strong style="font-size: 16px; color: #000932;">{{ jugador[1]|upper }}</strong>, {{ jugador[0] }}</td>
+                                <td class="pts">{{ jugador[2] }}</td>
+                            </tr>
+                            {% set ns.puesto = ns.puesto + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if ns.puesto == 1 %}
+                            <tr><td colspan="3" style="text-align:center; color:#999; padding: 20px;">Aún no hay puntos registrados en esta categoría.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </details>
+        {% endfor %}
+
+        <!-- RAMA DAMAS -->
+        <h2 class="titulo-rama">Rama Damas</h2>
+        {% for cat in categorias %}
+            <details>
+                <summary>Damas - {{ cat }}</summary>
+                <table class="tabla-ranking">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center;">#</th>
+                            <th>Jugadora</th>
+                            <th style="text-align: right;">Puntos Totales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set ns = namespace(puesto=1) %}
+                        {% for jugador in ranking_dam %}
+                            {% if jugador[3] == cat and ns.puesto <= 10 %}
+                            <tr>
+                                <td class="puesto">{{ ns.puesto }}</td>
+                                <td><strong style="font-size: 16px; color: #000932;">{{ jugador[1]|upper }}</strong>, {{ jugador[0] }}</td>
+                                <td class="pts">{{ jugador[2] }}</td>
+                            </tr>
+                            {% set ns.puesto = ns.puesto + 1 %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if ns.puesto == 1 %}
+                            <tr><td colspan="3" style="text-align:center; color:#999; padding: 20px;">Aún no hay puntos registrados en esta categoría.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </details>
+        {% endfor %}
+
     </div>
 </body>
 </html>

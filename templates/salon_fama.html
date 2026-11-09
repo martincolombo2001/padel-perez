@@ -11,25 +11,32 @@
         h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 10px; font-size: 28px; }
         .contenedor { max-width: 900px; margin: 0 auto; }
         
-        /* Diseño de tabla/filas para los torneos */
+        /* Buscador */
+        .buscador-caja { width: 100%; padding: 12px 15px; margin-bottom: 20px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; box-sizing: border-box; }
+        
+        /* Diseño de tabla */
         .tabla-fama { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         .tabla-fama th { background-color: #000932; color: #93b625; padding: 12px 15px; text-transform: uppercase; font-size: 13px; text-align: left; }
         .tabla-fama td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; vertical-align: middle; }
         .tabla-fama tr:last-child td { border-bottom: none; }
         .tabla-fama tr:hover { background-color: #fbfdf5; }
         
-        .tag-campeon { background-color: #eef7d4; color: #93b625; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; border: 1px solid #93b625;}
-        .tag-subcampeon { background-color: #f0f2f5; color: #666; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; border: 1px solid #ccc;}
+        /* Etiquetas flexibles para que no se corten los nombres */
+        .tag-campeon { display: inline-block; background-color: #eef7d4; color: #93b625; padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 13px; border: 1px solid #93b625; line-height: 1.4; word-break: break-word; }
+        .tag-subcampeon { display: inline-block; background-color: #f0f2f5; color: #666; padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 13px; border: 1px solid #ccc; line-height: 1.4; word-break: break-word; }
     </style>
 </head>
 <body>
     <div class="contenedor">
         <a href="/" class="btn-volver">← Volver al Inicio</a>
         <h1>Salón de la Fama 🏆</h1>
-        <p style="text-align: center; color: #666; margin-bottom: 30px;">El historial de campeones de Padel Pérez.</p>
+        <p style="text-align: center; color: #666; margin-bottom: 20px;">El historial de campeones de Padel Pérez.</p>
+
+        <!-- Filtro Buscador -->
+        <input type="text" id="buscador" class="buscador-caja" onkeyup="filtrarTabla()" placeholder="🔍 Buscar por año (ej: 2026), mes, torneo o categoría...">
 
         {% if torneos %}
-            <table class="tabla-fama">
+            <table class="tabla-fama" id="tablaFama">
                 <thead>
                     <tr>
                         <th>Torneo / Americano</th>
@@ -55,5 +62,23 @@
             <p style="text-align: center; color: #999; padding: 20px;">Aún no hay torneos finalizados registrados.</p>
         {% endif %}
     </div>
+
+    <script>
+        // Lógica del buscador en tiempo real
+        function filtrarTabla() {
+            let input = document.getElementById("buscador").value.toUpperCase();
+            let table = document.getElementById("tablaFama");
+            let tr = table.getElementsByTagName("tr");
+            
+            for (let i = 1; i < tr.length; i++) { // Empieza en 1 para saltar los títulos de las columnas
+                let rowText = tr[i].innerText.toUpperCase();
+                if (rowText.indexOf(input) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    </script>
 </body>
 </html>
