@@ -13,11 +13,19 @@
         input, select { width: 100%; padding: 10px; margin: 8px 0 15px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background-color: #000932; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #003383; }
-        .lista-items { list-style: none; padding: 0; margin-top: 20px; }
-        .lista-items li { background: #f9f9f9; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .lista-items { list-style: none; padding: 0; margin-top: 10px; }
+        .lista-items li { background: #fff; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         .btn-borrar { background-color: #dc3545; color: white; padding: 4px 8px; text-decoration: none; border-radius: 4px; font-size: 12px; }
         .btn-editar { background-color: #ffc107; color: #000; padding: 4px 8px; text-decoration: none; border: none; border-radius: 4px; font-size: 12px; cursor: pointer; margin-right: 5px; font-weight: bold; }
         .nota-roja { color: #f8111c; font-size: 11px; display: block; font-weight: normal; margin-top: -3px; margin-bottom: 5px; }
+        
+        /* Estilos para los acordeones del admin */
+        details.acordeon-admin { background: #f9f9f9; border: 1px solid #ddd; border-radius: 6px; padding: 10px; margin-top: 20px; }
+        summary.acordeon-admin-summary { font-size: 13px; font-weight: bold; color: #000932; cursor: pointer; list-style: none; outline: none; padding: 5px 0; }
+        summary.acordeon-admin-summary::-webkit-details-marker { display: none; }
+        summary.acordeon-admin-summary::after { content: ' ▼'; color: #93b625; float: right; }
+        details[open] > summary.acordeon-admin-summary::after { content: ' ▲'; }
+        details[open] > summary.acordeon-admin-summary { border-bottom: 1px solid #ccc; margin-bottom: 10px; padding-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -39,18 +47,19 @@
                 <input type="file" name="imagen" accept="image/*" required style="border: none; padding: 0;">
                 <button type="submit" style="margin-top: 10px;">Publicar Sponsor</button>
             </form>
-            <ul class="lista-items">
-                {% for sponsor in sponsors %}
-                <li style="display: flex; justify-content: space-between; align-items: center;">{{ sponsor[1] }} <a href="/eliminar_sponsor/{{ sponsor[0] }}" class="btn-borrar">X</a></li>
-                {% endfor %}
-            </ul>
+            <details class="acordeon-admin">
+                <summary class="acordeon-admin-summary">Ver Sponsors Cargados</summary>
+                <ul class="lista-items">
+                    {% for sponsor in sponsors %}
+                    <li style="display: flex; justify-content: space-between; align-items: center;">{{ sponsor[1] }} <a href="/eliminar_sponsor/{{ sponsor[0] }}" class="btn-borrar">X</a></li>
+                    {% endfor %}
+                </ul>
+            </details>
         </div>
 
         <!-- MÓDULO TORNEOS -->
         <div class="formulario">
             <h3>Cargar Torneo</h3>
-            
-            <!-- FORMULARIO PARA CREAR NUEVO TORNEO (El que se había borrado) -->
             <form action="/admin" method="POST">
                 <input type="hidden" name="accion" value="nuevo_torneo">
                 <label>Nombre:</label>
@@ -66,85 +75,88 @@
                 <button type="submit">Guardar Torneo</button>
             </form>
 
-            <ul class="lista-items" style="margin-top: 20px;">
-                {% for torneo in torneos %}
-                <li style="display: flex; flex-direction: column; align-items: stretch; margin-bottom: 10px; padding: 15px; background: #fff; border-radius: 8px; border-left: 4px solid #000932; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <span><strong style="font-size: 16px; color: #000932;">{{ torneo[1] }}</strong> ({{ torneo[2] }})</span>
-                        <a href="/eliminar/{{ torneo[0] }}" class="btn-borrar">X</a>
-                    </div>
-                    
-                    {% if torneo[3] == 'Activo' or not torneo[3] %}
-                        <!-- Formulario para finalizar torneo -->
-                        <form action="/admin" method="POST" style="margin-top: 10px;">
-                            <input type="hidden" name="accion" value="finalizar_torneo">
-                            <input type="hidden" name="id_torneo" value="{{ torneo[0] }}">
-                            
-                            <input type="text" name="campeones" placeholder="Campeones (Ej: Colombo / Marcos)" required style="width: 100%; margin-bottom: 5px; padding: 5px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;">
-                            <input type="text" name="subcampeones" placeholder="Subcampeones" required style="width: 100%; margin-bottom: 10px; padding: 5px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;">
-                            
-                            <!-- Inputs para asignar puntos a las parejas -->
-                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                <div style="flex: 1;">
-                                    <label style="font-size: 12px;">Pts Campeones:</label>
-                                    <input type="number" name="pts_campeones" value="500" style="padding: 5px; font-size: 13px; margin: 0;">
-                                </div>
-                                <div style="flex: 1;">
-                                    <label style="font-size: 12px;">Pts Subcampeones:</label>
-                                    <input type="number" name="pts_subcampeones" value="300" style="padding: 5px; font-size: 13px; margin: 0;">
-                                </div>
-                            </div>
-                            <!-- Selección de categoría para los puntos -->
-                             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                                <div style="flex: 1;">
-                                    <label style="font-size: 12px;">Rama:</label>
-                                    <select name="rama_puntos" style="padding: 5px; font-size: 13px; margin: 0;">
-                                        <option value="Caballeros">Caballeros</option>
-                                        <option value="Damas">Damas</option>
-                                        <option value="Mixta">Mixta</option>
-                                    </select>
-                                </div>
-                                <div style="flex: 1;">
-                                    <label style="font-size: 12px;">Categoría:</label>
-                                    <select name="categoria_puntos" style="padding: 5px; font-size: 13px; margin: 0;">
-                                         <option value="5ta">5ta</option>
-                                        <option value="6ta">6ta</option>
-                                        <option value="7ma">7ma</option>
-                                        <option value="Suma 12/13">Suma 12/13</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Selección de equipos para inyectar los puntos -->
-                            <label style="font-size: 12px;">Pareja Campeona (para sumar pts):</label>
-                            <select name="equipo_campeon" style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 13px;">
-                                <option value="">-- No sumar puntos a un equipo --</option>
-                                {% for equipo in equipos %}
-                                <option value="{{ equipo[0] }}">{{ equipo[4]|upper }} / {{ equipo[6]|upper }} ({{ equipo[1] }} {{ equipo[2] }})</option>
-                                {% endfor %}
-                            </select>
-
-                             <label style="font-size: 12px;">Pareja Subcampeona (para sumar pts):</label>
-                            <select name="equipo_subcampeon" style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 13px;">
-                                <option value="">-- No sumar puntos a un equipo --</option>
-                                {% for equipo in equipos %}
-                                <option value="{{ equipo[0] }}">{{ equipo[4]|upper }} / {{ equipo[6]|upper }} ({{ equipo[1] }} {{ equipo[2] }})</option>
-                                {% endfor %}
-                            </select>
-                            
-                            <button type="submit" style="background-color:#93b625; color:#000932; padding:5px 10px; font-weight:bold; border:none; cursor:pointer; border-radius: 4px; width: 100%;">Finalizar Torneo</button>
-                        </form>
-                    {% else %}
-                        <!-- Vista de torneo ya finalizado -->
-                        <div style="margin-top:10px; background: #fbfdf5; border: 1px solid #eef7d4; padding: 5px 10px; border-radius: 5px; text-align: center;">
-                            <div style="margin-bottom: 5px;"><span style="color:#93b625; font-weight:bold;">🏆 {{ torneo[4] }}</span></div>
-                            <div><span style="color:#666; font-weight:bold;">🥈 {{ torneo[5] }}</span></div>
-                            <div style="margin-top: 5px;"><span style="background:#000932; color:white; padding:2px 6px; border-radius:4px; font-size:11px;">FINALIZADO</span></div>
+            <details class="acordeon-admin">
+                <summary class="acordeon-admin-summary">Ver Torneos / Finalizar</summary>
+                <ul class="lista-items">
+                    {% for torneo in torneos %}
+                    <li style="display: flex; flex-direction: column; align-items: stretch; margin-bottom: 10px; border-left: 4px solid #000932; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span><strong style="font-size: 16px; color: #000932;">{{ torneo[1] }}</strong> ({{ torneo[2] }})</span>
+                            <a href="/eliminar/{{ torneo[0] }}" class="btn-borrar">X</a>
                         </div>
-                    {% endif %}
-                </li>
-                {% endfor %}
-            </ul>
+                        
+                        {% if torneo[3] == 'Activo' or not torneo[3] %}
+                            <!-- Formulario para finalizar torneo -->
+                            <form action="/admin" method="POST" style="margin-top: 10px; background: #f9f9f9; padding: 10px; border-radius: 4px;">
+                                <input type="hidden" name="accion" value="finalizar_torneo">
+                                <input type="hidden" name="id_torneo" value="{{ torneo[0] }}">
+                                
+                                <input type="text" name="campeones" placeholder="Campeones (Ej: Colombo/Marcos)" required style="width: 100%; margin-bottom: 5px; padding: 5px; font-size: 13px;">
+                                <input type="text" name="subcampeones" placeholder="Subcampeones" required style="width: 100%; margin-bottom: 10px; padding: 5px; font-size: 13px;">
+                                
+                                <!-- Inputs para asignar puntos a las parejas -->
+                                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 12px;">Pts Campeones:</label>
+                                        <input type="number" name="pts_campeones" value="500" style="padding: 5px; font-size: 13px; margin: 0;">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 12px;">Pts Subcampeones:</label>
+                                        <input type="number" name="pts_subcampeones" value="300" style="padding: 5px; font-size: 13px; margin: 0;">
+                                    </div>
+                                </div>
+                                <!-- Selección de categoría para los puntos (Individual 3ra a 8va) -->
+                                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 12px;">Rama:</label>
+                                        <select name="rama_puntos" style="padding: 5px; font-size: 13px; margin: 0;">
+                                            <option value="Caballeros">Caballeros</option>
+                                            <option value="Damas">Damas</option>
+                                            <option value="Mixta">Mixta</option>
+                                        </select>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label style="font-size: 12px;">Categoría:</label>
+                                        <select name="categoria_puntos" style="padding: 5px; font-size: 13px; margin: 0;">
+                                            <option value="3ra">3ra</option>
+                                            <option value="4ta">4ta</option>
+                                            <option value="5ta">5ta</option>
+                                            <option value="6ta">6ta</option>
+                                            <option value="7ma">7ma</option>
+                                            <option value="8va">8va</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <label style="font-size: 12px;">Pareja Campeona (para sumar pts):</label>
+                                <select name="equipo_campeon" style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 13px;">
+                                    <option value="">-- No sumar puntos a un equipo --</option>
+                                    {% for equipo in equipos %}
+                                    <option value="{{ equipo[0] }}">{{ equipo[4]|upper }} / {{ equipo[6]|upper }} ({{ equipo[1] }} {{ equipo[2] }})</option>
+                                    {% endfor %}
+                                </select>
+
+                                 <label style="font-size: 12px;">Pareja Subcampeona (para sumar pts):</label>
+                                <select name="equipo_subcampeon" style="width: 100%; padding: 5px; margin-bottom: 10px; font-size: 13px;">
+                                    <option value="">-- No sumar puntos a un equipo --</option>
+                                    {% for equipo in equipos %}
+                                    <option value="{{ equipo[0] }}">{{ equipo[4]|upper }} / {{ equipo[6]|upper }} ({{ equipo[1] }} {{ equipo[2] }})</option>
+                                    {% endfor %}
+                                </select>
+                                
+                                <button type="submit" style="background-color:#93b625; color:#000932; padding:5px 10px; font-weight:bold; border:none; cursor:pointer; width: 100%;">Finalizar Torneo</button>
+                            </form>
+                        {% else %}
+                            <div style="margin-top:10px; background: #fbfdf5; border: 1px solid #eef7d4; padding: 5px 10px; border-radius: 5px; text-align: center;">
+                                <div style="margin-bottom: 5px;"><span style="color:#93b625; font-weight:bold;">🏆 {{ torneo[4] }}</span></div>
+                                <div><span style="color:#666; font-weight:bold;">🥈 {{ torneo[5] }}</span></div>
+                                <div style="margin-top: 5px;"><span style="background:#000932; color:white; padding:2px 6px; border-radius:4px; font-size:11px;">FINALIZADO</span></div>
+                            </div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </details>
         </div>
 
         <!-- MÓDULO TIENDA -->
@@ -173,34 +185,37 @@
                 <input type="file" name="imagen" accept="image/*" required style="border: none; padding: 0;">
                 <button type="submit" style="margin-top: 10px;">Publicar Producto</button>
             </form>
-            <ul class="lista-items">
-                {% for prod in tienda %}
-                <li style="display: flex; flex-direction: column; align-items: stretch;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                        <span>{{ prod[3] }} ({{ prod[4] }}) - {{ prod[5] }}</span>
-                        <div style="display: flex; align-items: center;">
-                            <button type="button" class="btn-editar" onclick="document.getElementById('edit-prod-{{ prod[0] }}').style.display='block'">Editar</button>
-                            <a href="/eliminar_producto/{{ prod[0] }}" class="btn-borrar">X</a>
+            <details class="acordeon-admin">
+                <summary class="acordeon-admin-summary">Ver Productos en Tienda</summary>
+                <ul class="lista-items">
+                    {% for prod in tienda %}
+                    <li style="display: flex; flex-direction: column; align-items: stretch;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                            <span>{{ prod[3] }} ({{ prod[4] }}) - {{ prod[5] }}</span>
+                            <div style="display: flex; align-items: center;">
+                                <button type="button" class="btn-editar" onclick="document.getElementById('edit-prod-{{ prod[0] }}').style.display='block'">Editar</button>
+                                <a href="/eliminar_producto/{{ prod[0] }}" class="btn-borrar">X</a>
+                            </div>
                         </div>
-                    </div>
-                    <form id="edit-prod-{{ prod[0] }}" action="/editar_producto" method="POST" enctype="multipart/form-data" style="display: none; background: #eef2f5; padding: 15px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc;">
-                        <input type="hidden" name="id_producto" value="{{ prod[0] }}">
-                        <label style="font-size: 12px;">Nombre:</label>
-                        <input type="text" name="producto" value="{{ prod[3] }}" required style="margin: 4px 0 10px; padding: 8px;">
-                        <label style="font-size: 12px;">Talle:</label>
-                        <input type="text" name="talle" value="{{ prod[4] }}" required style="margin: 4px 0 10px; padding: 8px;">
-                        <label style="font-size: 12px;">Precio:</label>
-                        <input type="text" name="precio_prod" value="{{ prod[5] }}" required style="margin: 4px 0 10px; padding: 8px;">
-                        <label style="font-size: 12px;">Cambiar Foto:</label>
-                        <input type="file" name="imagen" accept="image/*" style="margin: 4px 0 10px; padding: 0; border: none;">
-                        <div style="display: flex; gap: 10px; margin-top: 10px;">
-                            <button type="submit" style="background-color: #93b625; color: #000932; padding: 10px;">Guardar</button>
-                            <button type="button" onclick="document.getElementById('edit-prod-{{ prod[0] }}').style.display='none'" style="background-color: #aaa; color: white; padding: 10px;">Cancelar</button>
-                        </div>
-                    </form>
-                </li>
-                {% endfor %}
-            </ul>
+                        <form id="edit-prod-{{ prod[0] }}" action="/editar_producto" method="POST" enctype="multipart/form-data" style="display: none; background: #eef2f5; padding: 15px; margin-top: 10px; border-radius: 6px; border: 1px solid #ccc;">
+                            <input type="hidden" name="id_producto" value="{{ prod[0] }}">
+                            <label style="font-size: 12px;">Nombre:</label>
+                            <input type="text" name="producto" value="{{ prod[3] }}" required style="margin: 4px 0 10px; padding: 8px;">
+                            <label style="font-size: 12px;">Talle:</label>
+                            <input type="text" name="talle" value="{{ prod[4] }}" required style="margin: 4px 0 10px; padding: 8px;">
+                            <label style="font-size: 12px;">Precio:</label>
+                            <input type="text" name="precio_prod" value="{{ prod[5] }}" required style="margin: 4px 0 10px; padding: 8px;">
+                            <label style="font-size: 12px;">Cambiar Foto:</label>
+                            <input type="file" name="imagen" accept="image/*" style="margin: 4px 0 10px; padding: 0; border: none;">
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button type="submit" style="background-color: #93b625; color: #000932; padding: 10px;">Guardar</button>
+                                <button type="button" onclick="document.getElementById('edit-prod-{{ prod[0] }}').style.display='none'" style="background-color: #aaa; color: white; padding: 10px;">Cancelar</button>
+                            </div>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </details>
         </div>
 
         <!-- MÓDULO EQUIPOS (LIGAS) -->
@@ -217,9 +232,13 @@
                         <option value="Mixta">Mixta</option>
                     </select>
                     <select name="categoria" style="width: 100%; padding: 10px; margin: 8px 0 15px;">
+                        <option value="3ra">3ra</option>
+                        <option value="4ta">4ta</option>
                         <option value="5ta">5ta</option>
                         <option value="6ta">6ta</option>
                         <option value="7ma">7ma</option>
+                        <option value="8va">8va</option>
+                        <option value="Suma 9">Suma 9</option>
                         <option value="Suma 12/13">Suma 12/13</option>
                     </select>
                 </div>
@@ -240,14 +259,17 @@
                 
                 <button type="submit" style="background-color: #93b625; color: #000932;">Inscribir Pareja</button>
             </form>
-            <ul class="lista-items">
-                {% for equipo in equipos %}
-                <li style="display: flex; justify-content: space-between; align-items: center;">
-                    <span>{{ equipo[4]|upper }} / {{ equipo[6]|upper }}<br><small>({{ equipo[1] }} - {{ equipo[2] }})</small></span> 
-                    <a href="/eliminar_equipo/{{ equipo[0] }}" class="btn-borrar">X</a>
-                </li>
-                {% endfor %}
-            </ul>
+            <details class="acordeon-admin">
+                <summary class="acordeon-admin-summary">Ver Parejas Inscriptas</summary>
+                <ul class="lista-items">
+                    {% for equipo in equipos %}
+                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>{{ equipo[4]|upper }} / {{ equipo[6]|upper }}<br><small>({{ equipo[1] }} - {{ equipo[2] }})</small></span> 
+                        <a href="/eliminar_equipo/{{ equipo[0] }}" class="btn-borrar">X</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </details>
         </div>
 
         <!-- MÓDULO PARTIDOS / FIXTURE -->
@@ -268,11 +290,15 @@
                     <div style="flex: 1;">
                         <label>Categoría:</label>
                         <select name="categoria" style="width: 100%; padding: 10px; margin: 8px 0 15px;">
+                            <option value="3ra">3ra</option>
+                            <option value="4ta">4ta</option>
                             <option value="5ta">5ta</option>
                             <option value="6ta">6ta</option>
                             <option value="7ma">7ma</option>
+                            <option value="8va">8va</option>
+                            <option value="Suma 9">Suma 9</option>
                             <option value="Suma 12/13">Suma 12/13</option>
-                            </select>
+                        </select>
                     </div>
                 </div>
 
@@ -299,23 +325,26 @@
                 <button type="submit" style="background-color: #93b625; color: #000932;">Programar Partido</button>
             </form>
             
-            <ul class="lista-items">
-                {% for partido in partidos %}
-                <li style="display: flex; justify-content: space-between; align-items: center;">
-                    {% if partido[8] == 'Fecha Libre' %}
-                        <span>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br><span style="color: #93b625; font-weight: bold;">⭐ FECHA LIBRE ⭐</span><br><small style="color: #666;">{{ partido[3] }} | Fase: {{ partido[8] }}</small></span>
-                    {% else %}
-                        <span>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br>vs<br> {{ partido[6]|upper }} / {{ partido[7]|upper }}<br><small style="color: #666;">{{ partido[3] }} | {{ partido[8] }}</small></span>
-                    {% endif %}
-                    <a href="/eliminar_partido/{{ partido[0] }}" class="btn-borrar">X</a>
-                </li>
-                {% endfor %}
-            </ul>
+            <details class="acordeon-admin">
+                <summary class="acordeon-admin-summary">Ver Fixture Programado</summary>
+                <ul class="lista-items">
+                    {% for partido in partidos %}
+                    <li style="display: flex; justify-content: space-between; align-items: center;">
+                        {% if partido[8] == 'Fecha Libre' %}
+                            <span>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br><span style="color: #93b625; font-weight: bold;">⭐ FECHA LIBRE ⭐</span><br><small style="color: #666;">{{ partido[3] }} | Fase: {{ partido[8] }}</small></span>
+                        {% else %}
+                            <span>{{ partido[4]|upper }} / {{ partido[5]|upper }} <br>vs<br> {{ partido[6]|upper }} / {{ partido[7]|upper }}<br><small style="color: #666;">{{ partido[3] }} | {{ partido[8] }}</small></span>
+                        {% endif %}
+                        <a href="/eliminar_partido/{{ partido[0] }}" class="btn-borrar">X</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </details>
         </div>
 
         <!-- MÓDULO CARGAR RESULTADOS Y PUNTOS -->
         <div class="formulario">
-            <h3 style="color: #f8111c;">Cerrar Partido y Sumar Puntos</h3>
+            <h3 style="color: #f8111c;">Cerrar Partido de Liga</h3>
             <form action="/actualizar_resultado" method="POST">
                 <label>Seleccionar Partido Pendiente:</label>
                 <select name="id_partido" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
@@ -361,18 +390,21 @@
                         <option value="Mixta">Mixta</option>
                     </select>
                     <select name="categoria" style="width: 100%; padding: 10px; margin: 8px 0 15px;" required>
+                        <option value="3ra">3ra</option>
+                        <option value="4ta">4ta</option>
                         <option value="5ta">5ta</option>
                         <option value="6ta">6ta</option>
                         <option value="7ma">7ma</option>
+                        <option value="8va">8va</option>
+                        <option value="Suma 9">Suma 9</option>
                         <option value="Suma 12/13">Suma 12/13</option>
                     </select>
                 </div>
                 <button type="submit" style="background-color: #003383; color: white;">Programar Cruces</button>
             </form>
         </div>
-    </div>
     
-    <!-- MÓDULO RANKING ANUAL (Inyectar Puntos) -->
+        <!-- MÓDULO RANKING ANUAL (Inyectar Puntos) -->
         <div class="formulario">
             <h3 style="color: #000932;">Inyectar Puntos al Ranking</h3>
             <p style="font-size: 12px; color: #666; margin-bottom: 15px; line-height: 1.4;">Sumá puntos por torneos, americanos o al finalizar una liga.</p>
@@ -391,12 +423,12 @@
                         <option value="Mixta">Mixta</option>
                     </select>
                     <select name="categoria" required style="flex: 1; padding: 10px; margin: 8px 0 15px;">
+                        <option value="3ra">3ra</option>
                         <option value="4ta">4ta</option>
                         <option value="5ta">5ta</option>
                         <option value="6ta">6ta</option>
                         <option value="7ma">7ma</option>
                         <option value="8va">8va</option>
-                        <option value="Suma 12/13">Suma 12/13</option>
                     </select>
                 </div>
                 
@@ -409,18 +441,22 @@
                 <button type="submit" style="background-color: #000932; color: #93b625;">Acreditar Puntos</button>
             </form>
             
-            <ul class="lista-items">
-                {% for ranking in rankings %}
-                <li style="display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #93b625;">
-                    <span style="font-size: 13px;">
-                        <strong>{{ ranking[1] }} {{ ranking[2]|upper }}</strong><br>
-                        <small style="color: #666;">+{{ ranking[5] }} pts | {{ ranking[3] }} {{ ranking[4] }}</small><br>
-                        <small style="color: #999;">Motivo: {{ ranking[6] }}</small>
-                    </span>
-                    <a href="/eliminar_puntaje/{{ ranking[0] }}" class="btn-borrar">X</a>
-                </li>
-                {% endfor %}
-            </ul>
+            <details class="acordeon-admin">
+                <summary class="acordeon-admin-summary">Ver Puntos Inyectados</summary>
+                <ul class="lista-items">
+                    {% for ranking in rankings %}
+                    <li style="display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #93b625;">
+                        <span style="font-size: 13px;">
+                            <strong>{{ ranking[1] }} {{ ranking[2]|upper }}</strong><br>
+                            <small style="color: #666;">+{{ ranking[5] }} pts | {{ ranking[3] }} {{ ranking[4] }}</small><br>
+                            <small style="color: #999;">Motivo: {{ ranking[6] }}</small>
+                        </span>
+                        <a href="/eliminar_puntaje/{{ ranking[0] }}" class="btn-borrar">X</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </details>
         </div>
+    </div>
 </body>
 </html>
