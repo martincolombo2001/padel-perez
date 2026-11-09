@@ -21,6 +21,32 @@ def obtener_conexion():
     else:
         return psycopg2.connect(dbname="padel_db", user="postgres", password="Luciano7#", host="localhost", port="5432")
 
+@app.route('/instalar_ranking')
+def instalar_ranking():
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    try:
+        # Borramos la tabla vieja que estaba sin uso y creamos la nueva súper completa
+        cursor.execute("DROP TABLE IF EXISTS rankings")
+        cursor.execute("""
+            CREATE TABLE rankings (
+                id SERIAL PRIMARY KEY, 
+                nombre VARCHAR(50), 
+                apellido VARCHAR(50), 
+                rama VARCHAR(50), 
+                categoria VARCHAR(50), 
+                puntos INTEGER, 
+                motivo VARCHAR(150), 
+                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        conexion.commit()
+        conexion.close()
+        return "¡Tabla de Ranking Anual instalada con éxito! Ya podés borrar esta ruta de app.py."
+    except Exception as e:
+        conexion.close()
+        return f"Error al instalar: {e}"
+    
 @app.route('/')
 def inicio():
     conexion = obtener_conexion()

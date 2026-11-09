@@ -9,44 +9,48 @@
         .btn-volver { display: inline-block; margin-bottom: 20px; color: #000932; text-decoration: none; font-weight: bold; border: 1px solid #000932; padding: 8px 16px; border-radius: 4px; transition: background 0.3s;}
         .btn-volver:hover { background-color: #000932; color: white; }
         h1 { color: #000932; text-align: center; text-transform: uppercase; margin-bottom: 10px; font-size: 28px; }
-        .contenedor { max-width: 800px; margin: 0 auto; }
+        .contenedor { max-width: 900px; margin: 0 auto; }
         
-        .torneo-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #93b625; text-align: center; }
-        .torneo-titulo { color: #000932; font-size: 22px; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; }
-        .torneo-fecha { color: #666; font-size: 14px; margin-bottom: 15px; }
+        /* Diseño de tabla/filas para los torneos */
+        .tabla-fama { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .tabla-fama th { background-color: #000932; color: #93b625; padding: 12px 15px; text-transform: uppercase; font-size: 13px; text-align: left; }
+        .tabla-fama td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; color: #333; vertical-align: middle; }
+        .tabla-fama tr:last-child td { border-bottom: none; }
+        .tabla-fama tr:hover { background-color: #fbfdf5; }
         
-        .podio { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 15px; margin-top: 15px; }
-        .campeones { background-color: #fbfdf5; border: 2px solid #eef7d4; padding: 15px; border-radius: 8px; flex: 1; min-width: 200px; }
-        .subcampeones { background-color: #f8f9fa; border: 2px solid #eee; padding: 15px; border-radius: 8px; flex: 1; min-width: 200px; }
-        .trofeo { font-size: 24px; display: block; margin-bottom: 5px; }
+        .tag-campeon { background-color: #eef7d4; color: #93b625; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; border: 1px solid #93b625;}
+        .tag-subcampeon { background-color: #f0f2f5; color: #666; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; border: 1px solid #ccc;}
     </style>
 </head>
 <body>
     <div class="contenedor">
         <a href="/" class="btn-volver">← Volver al Inicio</a>
         <h1>Salón de la Fama 🏆</h1>
-        <p style="text-align: center; color: #666; margin-bottom: 30px;">El historial incondicional de los campeones de nuestro club.</p>
+        <p style="text-align: center; color: #666; margin-bottom: 30px;">El historial de campeones de Padel Pérez.</p>
 
         {% if torneos %}
-            {% for torneo in torneos %}
-            <div class="torneo-card">
-                <div class="torneo-titulo">{{ torneo[0] }}</div>
-                <div class="torneo-fecha">{{ torneo[2] }} | Categorías: {{ torneo[1] }}</div>
-                
-                <div class="podio">
-                    <div class="campeones">
-                        <span class="trofeo">🏆</span>
-                        <strong style="color: #93b625; font-size: 14px;">CAMPEONES</strong><br>
-                        <span style="font-size: 18px; color: #000932; font-weight: bold;">{{ torneo[3]|upper }}</span>
-                    </div>
-                    <div class="subcampeones">
-                        <span class="trofeo">🥈</span>
-                        <strong style="color: #666; font-size: 14px;">SUBCAMPEONES</strong><br>
-                        <span style="font-size: 18px; color: #333; font-weight: bold;">{{ torneo[4]|upper }}</span>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+            <table class="tabla-fama">
+                <thead>
+                    <tr>
+                        <th>Torneo / Americano</th>
+                        <th>Categoría</th>
+                        <th>Fecha</th>
+                        <th>Campeones 🏆</th>
+                        <th>Subcampeones 🥈</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for torneo in torneos %}
+                    <tr>
+                        <td style="font-weight: bold; color: #000932;">{{ torneo[0] }}</td>
+                        <td>{{ torneo[1] }}</td>
+                        <td style="color: #666; font-size: 13px;">{{ torneo[2] }}</td>
+                        <td><span class="tag-campeon">{{ torneo[3]|upper }}</span></td>
+                        <td><span class="tag-subcampeon">{{ torneo[4]|upper }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% else %}
             <p style="text-align: center; color: #999; padding: 20px;">Aún no hay torneos finalizados registrados.</p>
         {% endif %}
