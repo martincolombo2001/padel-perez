@@ -50,62 +50,39 @@ def pagina_ligas():
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     
-    # 1. Ranking Caballeros (Liga Caballeros completa + Jugador 1 de Mixta)
-    cursor.execute("""
-        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Caballeros'
-        UNION ALL
-        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Caballeros'
-        UNION ALL
-        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Mixta'
-    """)
-    datos_cab = cursor.fetchall()
+    # El cerebro ahora lee ÚNICAMENTE de tu Libro Mayor (tabla rankings)
+    cursor.execute("SELECT nombre, apellido, categoria, puntos, rama FROM rankings")
+    datos_ranking = cursor.fetchall()
     
     ranking_c = {}
-    for nombre, apellido, puntos, categoria, rama in datos_cab:
+    ranking_d = {}
+    
+    for nombre, apellido, categoria, puntos, rama in datos_ranking:
         if not nombre: continue
-        cat_real = categoria
-        ap_limpio = apellido
-        # Si es mixta y tiene paréntesis, extraemos la categoría real y limpiamos el apellido
-        if rama == 'Mixta' and '(' in apellido and ')' in apellido:
-            match = re.search(r'\((.*?)\)', apellido)
-            if match:
-                cat_real = match.group(1).strip()
-                ap_limpio = re.sub(r'\s*\(.*?\)\s*', '', apellido).strip()
         
-        clave = (nombre, ap_limpio, cat_real)
-        ranking_c[clave] = ranking_c.get(clave, 0) + puntos
+        # Limpiamos los textos por si se escapó algún espacio al tipear
+        nom_limpio = nombre.strip()
+        ap_limpio = apellido.strip()
+        cat = categoria.strip()
         
+        clave = (nom_limpio, ap_limpio, cat)
+        
+        # Agrupamos los puntos matemáticamente según la rama elegida
+        if rama == 'Caballeros':
+            ranking_c[clave] = ranking_c.get(clave, 0) + puntos
+        elif rama == 'Damas':
+            ranking_d[clave] = ranking_d.get(clave, 0) + puntos
+
+    # Armamos la lista y ordenamos: primero por categoría, luego por puntos de mayor a menor
     ranking_caballeros = [ (k[0], k[1], v, k[2]) for k, v in ranking_c.items() ]
     ranking_caballeros.sort(key=lambda x: (x[3], -x[2]))
 
-    # 2. Ranking Damas (Liga Damas completa + Jugador 2 de Mixta)
-    cursor.execute("""
-        SELECT j1_nombre, j1_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Damas'
-        UNION ALL
-        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Damas'
-        UNION ALL
-        SELECT j2_nombre, j2_apellido, puntos, categoria, rama FROM equipos_liga WHERE rama = 'Mixta'
-    """)
-    datos_dam = cursor.fetchall()
-    
-    ranking_d = {}
-    for nombre, apellido, puntos, categoria, rama in datos_dam:
-        if not nombre: continue
-        cat_real = categoria
-        ap_limpio = apellido
-        if rama == 'Mixta' and '(' in apellido and ')' in apellido:
-            match = re.search(r'\((.*?)\)', apellido)
-            if match:
-                cat_real = match.group(1).strip()
-                ap_limpio = re.sub(r'\s*\(.*?\)\s*', '', apellido).strip()
-                
-        clave = (nombre, ap_limpio, cat_real)
-        ranking_d[clave] = ranking_d.get(clave, 0) + puntos
-        
     ranking_damas = [ (k[0], k[1], v, k[2]) for k, v in ranking_d.items() ]
     ranking_damas.sort(key=lambda x: (x[3], -x[2]))
-
+    
     conexion.close()
+    
+    # Le mandamos los datos al HTML en el formato exacto que ya conoce
     return render_template('ligas.html', ranking_cab=ranking_caballeros, ranking_dam=ranking_damas)
 @app.route('/mixta')
 def liga_mixta():
