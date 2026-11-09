@@ -21,32 +21,6 @@ def obtener_conexion():
     else:
         return psycopg2.connect(dbname="padel_db", user="postgres", password="Luciano7#", host="localhost", port="5432")
 
-@app.route('/instalar_ranking')
-def instalar_ranking():
-    conexion = obtener_conexion()
-    cursor = conexion.cursor()
-    try:
-        # Borramos la tabla vieja que estaba sin uso y creamos la nueva súper completa
-        cursor.execute("DROP TABLE IF EXISTS rankings")
-        cursor.execute("""
-            CREATE TABLE rankings (
-                id SERIAL PRIMARY KEY, 
-                nombre VARCHAR(50), 
-                apellido VARCHAR(50), 
-                rama VARCHAR(50), 
-                categoria VARCHAR(50), 
-                puntos INTEGER, 
-                motivo VARCHAR(150), 
-                fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """)
-        conexion.commit()
-        conexion.close()
-        return "¡Tabla de Ranking Anual instalada con éxito! Ya podés borrar esta ruta de app.py."
-    except Exception as e:
-        conexion.close()
-        return f"Error al instalar: {e}"
-    
 @app.route('/')
 def inicio():
     conexion = obtener_conexion()
@@ -309,7 +283,18 @@ def panel_admin():
             # 3. Inyectamos los puntos a la pareja subcampeona (si elegiste una)
             if equipo_subcampeon != "":
                 cursor.execute("UPDATE equipos_liga SET puntos = puntos + %s WHERE id = %s", (pts_subcampeones, equipo_subcampeon))
+
+        elif accion == 'nuevo_puntaje':
+            nombre = request.form.get('nombre', '')
+            apellido = request.form.get('apellido', '')
+            rama = request.form.get('rama', '')
+            categoria = request.form.get('categoria', '')
+            puntos = request.form.get('puntos', 0)
+            motivo = request.form.get('motivo', '')
             
+            cursor.execute("INSERT INTO rankings (nombre, apellido, rama, categoria, puntos, motivo) VALUES (%s, %s, %s, %s, %s, %s)",
+                           (nombre, apellido, rama, categoria, puntos, motivo))
+                
         conexion.commit()
         return redirect(url_for('panel_admin'))
 
@@ -332,8 +317,13 @@ def panel_admin():
         ORDER BY p.id DESC
     """)
     partidos_guardados = cursor.fetchall()
+    cursor.execute("SELECT id, nombre, apellido, rama, categoria, puntos, motivo, fecha FROM rankings ORDER BY id DESC")
+    rankings_guardados = cursor.fetchall()
+
     conexion.close()
-    return render_template('admin.html', torneos=torneos_guardados, tienda=tienda_guardada, equipos=equipos_guardados, partidos=partidos_guardados, sponsors=sponsors_guardados)
+    # ACORDATE de agregar rankings=rankings_guardados en este return:
+    return render_template('admin.html', torneos=torneos_guardados, tienda=tienda_guardada, equipos=equipos_guardados, partidos=partidos_guardados, sponsors=sponsors_guardados, rankings=rankings_guardados)
+   
 
 @app.route('/actualizar_resultado', methods=['POST'])
 def actualizar_resultado():
@@ -420,6 +410,15 @@ def eliminar_sponsor(id_sponsor):
     conexion = obtener_conexion()
     cursor = conexion.cursor()
     cursor.execute("DELETE FROM sponsors WHERE id = %s", (id_sponsor,))
+    conexion.commit()
+    conexion.close()
+    return redirect(url_for('panel_admin'))
+
+@app.route('/eliminar_puntaje/<int:id_puntaje>')
+def eliminar_puntaje(id_puntaje):
+    conexion = obtener_conexion()
+    cursor = conexion.cursor()
+    cursor.execute("DELETE FROM rankings WHERE id = %s", (id_puntaje,))
     conexion.commit()
     conexion.close()
     return redirect(url_for('panel_admin'))

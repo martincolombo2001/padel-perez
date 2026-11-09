@@ -91,9 +91,11 @@
                                 <div style="flex: 1;">
                                     <label style="font-size: 12px;">Categoría:</label>
                                     <select name="categoria_puntos" style="padding: 5px; font-size: 13px; margin: 0;">
-                                         <option value="5ta">5ta</option>
+                                        <option value="4ta">4ta</option>
+                                        <option value="5ta">5ta</option>
                                         <option value="6ta">6ta</option>
                                         <option value="7ma">7ma</option>
+                                        <option value="8va">8va</option>
                                         <option value="Suma 12/13">Suma 12/13</option>
                                     </select>
                                 </div>
@@ -355,5 +357,54 @@
             </form>
         </div>
     </div>
+    
+    <!-- MÓDULO RANKING ANUAL (Inyectar Puntos) -->
+        <div class="formulario">
+            <h3 style="color: #000932;">Inyectar Puntos al Ranking</h3>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px; line-height: 1.4;">Sumá puntos por torneos, americanos o al finalizar una liga.</p>
+            <form action="/admin" method="POST">
+                <input type="hidden" name="accion" value="nuevo_puntaje">
+                
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" name="nombre" placeholder="Nombre" required style="flex: 1; padding: 10px; margin: 8px 0;">
+                    <input type="text" name="apellido" placeholder="Apellido" required style="flex: 1; padding: 10px; margin: 8px 0;">
+                </div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <select name="rama" required style="flex: 1; padding: 10px; margin: 8px 0 15px;">
+                        <option value="Caballeros">Caballeros</option>
+                        <option value="Damas">Damas</option>
+                        <option value="Mixta">Mixta</option>
+                    </select>
+                    <select name="categoria" required style="flex: 1; padding: 10px; margin: 8px 0 15px;">
+                        <option value="5ta">5ta</option>
+                        <option value="6ta">6ta</option>
+                        <option value="7ma">7ma</option>
+                        <option value="Suma 12/13">Suma 12/13</option>
+                    </select>
+                </div>
+                
+                <label>Puntos a sumar:</label>
+                <input type="number" name="puntos" placeholder="Ej: 150" required>
+                
+                <label>Motivo (Ej: Campeón Torneo Mayo):</label>
+                <input type="text" name="motivo" placeholder="Ej: Campeón Americano" required>
+                
+                <button type="submit" style="background-color: #000932; color: #93b625;">Acreditar Puntos</button>
+            </form>
+            
+            <ul class="lista-items">
+                {% for ranking in rankings %}
+                <li style="display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #93b625;">
+                    <span style="font-size: 13px;">
+                        <strong>{{ ranking[1] }} {{ ranking[2]|upper }}</strong><br>
+                        <small style="color: #666;">+{{ ranking[5] }} pts | {{ ranking[3] }} {{ ranking[4] }}</small><br>
+                        <small style="color: #999;">Motivo: {{ ranking[6] }}</small>
+                    </span>
+                    <a href="/eliminar_puntaje/{{ ranking[0] }}" class="btn-borrar">X</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
 </body>
 </html>
