@@ -49,8 +49,24 @@
         <!-- MÓDULO TORNEOS -->
         <div class="formulario">
             <h3>Cargar Torneo</h3>
-            <!-- ... (el formulario "Cargar Torneo" queda igual) ... -->
-            <ul class="lista-items">
+            
+            <!-- FORMULARIO PARA CREAR NUEVO TORNEO (El que se había borrado) -->
+            <form action="/admin" method="POST">
+                <input type="hidden" name="accion" value="nuevo_torneo">
+                <label>Nombre:</label>
+                <input type="text" name="nombre" required>
+                <label>Categorías:</label>
+                <input type="text" name="categorias" required>
+                <label>Fecha:</label>
+                <input type="text" name="fecha" required>
+                <label>Precio:</label>
+                <input type="text" name="precio" required>
+                <label>Premios:</label>
+                <input type="text" name="premios" required>
+                <button type="submit">Guardar Torneo</button>
+            </form>
+
+            <ul class="lista-items" style="margin-top: 20px;">
                 {% for torneo in torneos %}
                 <li style="display: flex; flex-direction: column; align-items: stretch; margin-bottom: 10px; padding: 15px; background: #fff; border-radius: 8px; border-left: 4px solid #000932; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
@@ -91,11 +107,9 @@
                                 <div style="flex: 1;">
                                     <label style="font-size: 12px;">Categoría:</label>
                                     <select name="categoria_puntos" style="padding: 5px; font-size: 13px; margin: 0;">
-                                        <option value="4ta">4ta</option>
-                                        <option value="5ta">5ta</option>
+                                         <option value="5ta">5ta</option>
                                         <option value="6ta">6ta</option>
                                         <option value="7ma">7ma</option>
-                                        <option value="8va">8va</option>
                                         <option value="Suma 12/13">Suma 12/13</option>
                                     </select>
                                 </div>
